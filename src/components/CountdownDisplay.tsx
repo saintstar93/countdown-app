@@ -1,18 +1,18 @@
-import { View, Text } from 'react-native';
-import type { CountdownFormat } from '~/types/event';
+import { Text } from 'react-native';
 import { useCountdown } from '~/hooks/useCountdown';
+import type { CountdownFormat } from '~/types/event';
 
 interface CountdownDisplayProps {
   targetDate: string;
   format: CountdownFormat;
+  className?: string;
 }
 
-export default function CountdownDisplay({ targetDate, format }: CountdownDisplayProps) {
+export default function CountdownDisplay({ targetDate, format, className }: CountdownDisplayProps) {
   const { formatted } = useCountdown(targetDate, format);
-
   return (
-    <View className="items-center">
-      <Text className="text-gray-900 dark:text-white text-2xl font-bold">{formatted}</Text>
-    </View>
+    <Text className={className ?? 'text-center text-sm font-medium text-gray-500 dark:text-gray-400'}>
+      {formatted}
+    </Text>
   );
 }

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, type TextInputProps } from 'react-native';
+import { View, Text, TextInput, Pressable, useColorScheme, type TextInputProps } from 'react-native';
 import { useState } from 'react';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
@@ -15,6 +15,7 @@ export default function Input({
 }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const isPassword = secureTextEntry === true;
+  const colorScheme = useColorScheme();
 
   return (
     <View className="mb-4">
@@ -31,7 +32,8 @@ export default function Input({
         ].join(' ')}
       >
         <TextInput
-          className="flex-1 text-[#1a1a1a] dark:text-white text-base"
+          className="flex-1 text-base"
+          style={{ color: colorScheme === 'dark' ? '#ffffff' : '#1a1a1a' }}
           placeholderTextColor="#9CA3AF"
           secureTextEntry={isPassword && !isPasswordVisible}
           autoCapitalize="none"
