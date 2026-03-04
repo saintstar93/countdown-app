@@ -1,4 +1,4 @@
-import { View, Dimensions, useColorScheme } from 'react-native';
+import { View, useColorScheme } from 'react-native';
 import { useState } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
@@ -10,72 +10,56 @@ import Animated, {
   Extrapolation,
   type SharedValue,
 } from 'react-native-reanimated';
+import { Dimensions } from 'react-native';
 import type { Event } from '~/types/event';
 import PolaroidCard, { CARD_WIDTH, CARD_HEIGHT } from './PolaroidCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Swipe threshold to commit to a transition
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.22;
-// Distance over which the forward animation runs (0 → 1 in progress)
 const SWIPE_DIST = SCREEN_WIDTH * 0.45;
 const SPRING = { damping: 22, stiffness: 200 };
 
-// Stack visual positions: index 0 = front, 1 = one behind, 2 = two behind
+// Stack visual offsets: index 0 = front card, 1 = one behind, 2 = two behind
 const STACK = [
   { tx: 0,  ty: 0,   rz: 0,  sc: 1.00 },
   { tx: 24, ty: -6,  rz: 5,  sc: 0.96 },
   { tx: 44, ty: -12, rz: 9,  sc: 0.92 },
 ] as const;
 
-// Per-card animated stack component — reads progress + dragX from parent
 function StackCard({
   event,
   cardIndex,
   progress,
-  dragX,
-  currentIndexSV,
 }: {
   event: Event;
   cardIndex: number;
   progress: SharedValue<number>;
-  dragX: SharedValue<number>;
-  currentIndexSV: SharedValue<number>;
 }) {
   const animatedStyle = useAnimatedStyle(() => {
-    // Stack position: 0 = front, positive = behind, negative = exiting
+    // Stack position: 0 = front, positive = behind, negative = exiting/entering left
     const sp = cardIndex - progress.value;
 
-    // === BACKWARD DRAG: top card follows finger to the right ===
-    if (dragX.value > 0 && sp > -0.05 && sp < 0.05) {
-      const rz = interpolate(dragX.value, [0, SCREEN_WIDTH], [0, 15], Extrapolation.CLAMP);
-      return {
-        position: 'absolute' as const,
-        zIndex: 100,
-        opacity: 1,
-        transform: [{ translateX: dragX.value }, { rotateZ: `${rz}deg` }],
-      };
-    }
-
-    // === HIDDEN: too far behind or fully exited ===
-    if (sp < -0.8 || sp > 2.8) {
+    // Hidden: too far outside the visible range
+    if (sp < -0.9 || sp > 2.8) {
       return { position: 'absolute' as const, opacity: 0, zIndex: 0 };
     }
 
-    // === EXITING LEFT (forward swipe): sp going from 0 to -1 ===
+    // Exiting left (forward swipe sp: 0 → -1) or re-entering from left (backward swipe sp: -1 → 0)
     if (sp < 0) {
-      const tx = interpolate(sp, [-0.8, 0], [-SCREEN_WIDTH * 0.9, 0], Extrapolation.CLAMP);
-      const rz = interpolate(sp, [-0.8, 0], [-20, 0], Extrapolation.CLAMP);
-      const op = interpolate(sp, [-0.5, 0], [0, 1], Extrapolation.CLAMP);
+      const tx = interpolate(sp, [-0.9, 0], [-SCREEN_WIDTH * 0.9, 0], Extrapolation.CLAMP);
+      const rz = interpolate(sp, [-0.9, 0], [-18, 0], Extrapolation.CLAMP);
+      // Fade in quickly from -0.9 to -0.15 so re-entering card appears smoothly
+      const op = interpolate(sp, [-0.9, -0.1], [0, 1], Extrapolation.CLAMP);
       return {
         position: 'absolute' as const,
-        zIndex: 90,
+        zIndex: 100, // always on top while in exit/enter transition
         opacity: op,
         transform: [{ translateX: tx }, { rotateZ: `${rz}deg` }],
       };
     }
 
-    // === STACK POSITION (sp 0, 1, 2) ===
+    // Normal stack position (sp 0, 1, 2)
     const tx = interpolate(sp, [0, 1, 2], [STACK[0].tx, STACK[1].tx, STACK[2].tx], Extrapolation.CLAMP);
     const ty = interpolate(sp, [0, 1, 2], [STACK[0].ty, STACK[1].ty, STACK[2].ty], Extrapolation.CLAMP);
     const rz = interpolate(sp, [0, 1, 2], [STACK[0].rz, STACK[1].rz, STACK[2].rz], Extrapolation.CLAMP);
@@ -102,14 +86,12 @@ function StackCard({
 interface PolaroidSwiperProps {
   events: Event[];
   onIndexChange?: (index: number) => void;
+  onEventPress?: (event: Event) => void;
 }
 
-export default function PolaroidSwiper({ events, onIndexChange }: PolaroidSwiperProps) {
+export default function PolaroidSwiper({ events, onIndexChange, onEventPress }: PolaroidSwiperProps) {
   const [displayIndex, setDisplayIndex] = useState(0);
-  // progress: float belt value — 0 = first card at front, 1 = second card at front, etc.
   const progress = useSharedValue(0);
-  // dragX: only used during backward (right) swipe for top-card offset
-  const dragX = useSharedValue(0);
   const currentIndexSV = useSharedValue(0);
   const eventCountSV = useSharedValue(events.length);
 
@@ -118,22 +100,31 @@ export default function PolaroidSwiper({ events, onIndexChange }: PolaroidSwiper
     onIndexChange?.(next);
   }
 
+  function handleCardPress() {
+    const event = events[currentIndexSV.value];
+    if (event) onEventPress?.(event);
+  }
+
+  const tapGesture = Gesture.Tap()
+    .maxDuration(300)
+    .onEnd(() => {
+      runOnJS(handleCardPress)();
+    });
+
   const panGesture = Gesture.Pan()
     .activeOffsetX([-12, 12])
     .onUpdate((e) => {
       const tx = e.translationX;
       if (tx < 0) {
-        // === FORWARD (left swipe) — drive the stack belt ===
-        dragX.value = 0;
+        // Forward (left swipe): advance progress
         const atEnd = currentIndexSV.value === eventCountSV.value - 1;
         const mult = atEnd ? 0.12 : 1;
         progress.value = currentIndexSV.value + (-tx * mult) / SWIPE_DIST;
       } else {
-        // === BACKWARD (right swipe) — move top card only, keep belt fixed ===
-        progress.value = currentIndexSV.value;
+        // Backward (right swipe): decrease progress so previous card re-enters from left
         const atStart = currentIndexSV.value === 0;
         const mult = atStart ? 0.12 : 1;
-        dragX.value = tx * mult;
+        progress.value = currentIndexSV.value - (tx * mult) / SWIPE_DIST;
       }
     })
     .onEnd((e) => {
@@ -142,27 +133,21 @@ export default function PolaroidSwiper({ events, onIndexChange }: PolaroidSwiper
       const canPrev = currentIndexSV.value > 0;
 
       if (tx < -SWIPE_THRESHOLD && canNext) {
-        // Complete forward — spring belt to next integer
         const next = currentIndexSV.value + 1;
         currentIndexSV.value = next;
         progress.value = withSpring(next, SPRING);
-        dragX.value = 0;
         runOnJS(updateIndex)(next);
       } else if (tx > SWIPE_THRESHOLD && canPrev) {
-        // Complete backward — top card exits right, then jump belt
-        dragX.value = withSpring(SCREEN_WIDTH * 1.5, SPRING, () => {
-          const prev = currentIndexSV.value - 1;
-          currentIndexSV.value = prev;
-          progress.value = prev;   // instant (no animation)
-          dragX.value = 0;
-          runOnJS(updateIndex)(prev);
-        });
+        const prev = currentIndexSV.value - 1;
+        currentIndexSV.value = prev;
+        progress.value = withSpring(prev, SPRING);
+        runOnJS(updateIndex)(prev);
       } else {
-        // Snap back
         progress.value = withSpring(currentIndexSV.value, SPRING);
-        dragX.value = withSpring(0, SPRING);
       }
     });
+
+  const composed = Gesture.Race(panGesture, tapGesture);
 
   const isDark = useColorScheme() === 'dark';
   const dotActive = isDark ? '#A78BFA' : '#6366F1';
@@ -170,10 +155,8 @@ export default function PolaroidSwiper({ events, onIndexChange }: PolaroidSwiper
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Stack area */}
-      <GestureDetector gesture={panGesture}>
+      <GestureDetector gesture={composed}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          {/* Container sized to top card — behind cards overflow visibly to the right */}
           <View style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}>
             {events.map((event, i) => (
               <StackCard
@@ -181,8 +164,6 @@ export default function PolaroidSwiper({ events, onIndexChange }: PolaroidSwiper
                 event={event}
                 cardIndex={i}
                 progress={progress}
-                dragX={dragX}
-                currentIndexSV={currentIndexSV}
               />
             ))}
           </View>

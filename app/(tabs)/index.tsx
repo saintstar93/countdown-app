@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import PolaroidSwiper from '~/components/PolaroidSwiper';
+import EventFullScreen from '~/components/EventFullScreen';
 import type { Event } from '~/types/event';
 
 // Mock events — sostituire con useEventsStore dopo integrazione Supabase
@@ -78,28 +79,17 @@ const displayEvents = [...MOCK_EVENTS].sort(
 export default function HomeScreen() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [liked, setLiked] = useState(false);
-
-  const iconColor = isDark ? '#FFFFFF' : '#374151';
-  const heartColor = liked
-    ? (isDark ? '#EF4444' : '#3B82F6')
-    : iconColor;
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F0EEF5] dark:bg-[#0D0D0D]" edges={['top']}>
 
-      {/* ── Header ── */}
+      {/* Header */}
       <View className="flex-row items-center justify-between px-5 pt-2 pb-1">
-        {/* Spacer left (equals gear icon width) */}
         <View style={{ width: 36 }} />
-
-        <View className="items-center">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-            Eventi & Ricordi
-          </Text>
-        </View>
-
+        <Text className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+          Eventi & Ricordi
+        </Text>
         <Pressable
           onPress={() => router.push('/(tabs)/profile')}
           hitSlop={8}
@@ -114,7 +104,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      {/* ── Subtitle ── */}
+      {/* Subtitle */}
       <View className="items-center pb-1">
         <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Prossimi eventi
@@ -124,62 +114,23 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* ── Card Stack ── */}
+      {/* Card Stack */}
       <View className="flex-1">
         {displayEvents.length === 0 ? (
           <EmptyState onAdd={() => router.push('/event/create')} />
         ) : (
           <PolaroidSwiper
             events={displayEvents}
-            onIndexChange={(i) => { setCurrentIndex(i); setLiked(false); }}
+            onEventPress={setSelectedEvent}
           />
         )}
       </View>
 
-      {/* ── Action bar ── */}
-      {displayEvents.length > 0 && (
-        <View
-          className="flex-row items-center justify-around px-6 py-3 border-t border-gray-200 dark:border-gray-800"
-        >
-          {/* Mi Piace */}
-          <Pressable
-            onPress={() => setLiked((v) => !v)}
-            className="flex-row items-center gap-1.5 active:opacity-60"
-            accessibilityLabel="Mi piace"
-          >
-            <Ionicons
-              name={liked ? 'heart' : 'heart-outline'}
-              size={22}
-              color={heartColor}
-            />
-            <Text style={{ color: heartColor }} className="text-sm font-medium">
-              Mi Piace
-            </Text>
-          </Pressable>
-
-          {/* Commenti */}
-          <Pressable
-            className="flex-row items-center gap-1.5 active:opacity-60"
-            accessibilityLabel="Commenti"
-          >
-            <Ionicons name="chatbubble-outline" size={21} color={iconColor} />
-            <Text style={{ color: iconColor }} className="text-sm font-medium">
-              Commenti
-            </Text>
-          </Pressable>
-
-          {/* Condividi */}
-          <Pressable
-            className="flex-row items-center gap-1.5 active:opacity-60"
-            accessibilityLabel="Condividi"
-          >
-            <Ionicons name="paper-plane-outline" size={21} color={iconColor} />
-            <Text style={{ color: iconColor }} className="text-sm font-medium">
-              Condividi
-            </Text>
-          </Pressable>
-        </View>
-      )}
+      {/* Full-screen detail modal */}
+      <EventFullScreen
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
 
     </SafeAreaView>
   );
