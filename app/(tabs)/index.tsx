@@ -1,10 +1,8 @@
 import { View, Text, Pressable, useColorScheme } from 'react-native';
-import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import PolaroidSwiper from '~/components/PolaroidSwiper';
-import EventFullScreen from '~/components/EventFullScreen';
 import { useEventsStore } from '~/store/eventsStore';
 import type { Event } from '~/types/event';
 
@@ -12,7 +10,6 @@ export default function HomeScreen() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
   const events = useEventsStore((s) => s.events);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F0EEF5] dark:bg-[#0D0D0D]" edges={['top']}>
@@ -56,12 +53,9 @@ export default function HomeScreen() {
         {events.length === 0 ? (
           <EmptyState onAdd={() => router.push('/event/create')} />
         ) : (
-          <PolaroidSwiper events={events} onEventPress={setSelectedEvent} />
+          <PolaroidSwiper events={events} onEventPress={(e: Event) => router.push(`/event/${e.id}`)} />
         )}
       </View>
-
-      {/* Full-screen detail modal */}
-      <EventFullScreen event={selectedEvent} onClose={() => setSelectedEvent(null)} />
 
     </SafeAreaView>
   );

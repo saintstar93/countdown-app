@@ -63,6 +63,8 @@ export interface EventFormHandle {
 
 interface EventFormProps {
   onValidityChange: (isValid: boolean) => void;
+  initialValues?: Partial<Event>;
+  allowPastDate?: boolean;
 }
 
 // ─── Sub-component ────────────────────────────────────────────────────────────
@@ -84,27 +86,45 @@ function SectionLabel({ children, muted }: { children: string; muted: string }) 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-const EventForm = forwardRef<EventFormHandle, EventFormProps>(({ onValidityChange }, ref) => {
+const DEFAULT_TAG_IDS = new Set<string>(DEFAULT_TAGS.map((t) => t.id));
+
+const EventForm = forwardRef<EventFormHandle, EventFormProps>(
+  ({ onValidityChange, initialValues, allowPastDate }, ref) => {
   const isDark = useColorScheme() === 'dark';
   const router = useRouter();
 
-  // Form state
-  const [title, setTitle] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  // Form state — lazily initialized from initialValues when present
+  const [title, setTitle] = useState(() => initialValues?.title ?? '');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
+    initialValues?.date ? new Date(initialValues.date) : null
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [countdownFormat, setCountdownFormat] = useState<CountdownFormat>('days');
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [customTags, setCustomTags] = useState<Tag[]>([]);
+  const [countdownFormat, setCountdownFormat] = useState<CountdownFormat>(
+    () => initialValues?.countdownFormat ?? 'days'
+  );
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    () => initialValues?.tags?.map((t) => t.id) ?? []
+  );
+  const [customTags, setCustomTags] = useState<Tag[]>(
+    () => initialValues?.tags?.filter((t) => !DEFAULT_TAG_IDS.has(t.id)) ?? []
+  );
   const [showNewTag, setShowNewTag] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
-  const [selectedFontKey, setSelectedFontKey] = useState('sans');
-  const [imageUrl, setImageUrl] = useState<string | undefined>();
-  const [imageAlt, setImageAlt] = useState('');
-  const [imageSource, setImageSource] = useState<Event['imageSource']>(undefined);
-  const [imageAuthor, setImageAuthor] = useState('');
-  const [imageAuthorUrl, setImageAuthorUrl] = useState('');
-  const [imageObjectFit, setImageObjectFit] = useState<NonNullable<Event['imageObjectFit']>>('cover');
+  const [selectedFontKey, setSelectedFontKey] = useState(() => {
+    if (!initialValues?.font) return 'sans';
+    return POLAROID_FONTS.find((f) => f.family === initialValues.font)?.key ?? 'sans';
+  });
+  const [imageUrl, setImageUrl] = useState<string | undefined>(() => initialValues?.imageUrl);
+  const [imageAlt, setImageAlt] = useState(() => initialValues?.imageAlt ?? '');
+  const [imageSource, setImageSource] = useState<Event['imageSource']>(
+    () => initialValues?.imageSource
+  );
+  const [imageAuthor, setImageAuthor] = useState(() => initialValues?.imageAuthor ?? '');
+  const [imageAuthorUrl, setImageAuthorUrl] = useState(() => initialValues?.imageAuthorUrl ?? '');
+  const [imageObjectFit, setImageObjectFit] = useState<NonNullable<Event['imageObjectFit']>>(
+    () => initialValues?.imageObjectFit ?? 'cover'
+  );
 
   // Derived
   const allTags: Tag[] = [...DEFAULT_TAGS.map(t => ({ ...t })), ...customTags];
@@ -261,7 +281,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(({ onValidityChang
               value={selectedDate ?? tomorrow()}
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              minimumDate={tomorrow()}
+              minimumDate={allowPastDate ? undefined : tomorrow()}
               locale="it-IT"
               onChange={(event, date) => {
                 if (Platform.OS === 'android') setShowDatePicker(false);
@@ -511,7 +531,8 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(({ onValidityChang
 
     </ScrollView>
   );
-});
+},
+);
 
 EventForm.displayName = 'EventForm';
 export default EventForm;
