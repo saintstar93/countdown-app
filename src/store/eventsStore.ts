@@ -15,6 +15,7 @@ interface EventsStore {
   updateEvent: (id: string, updates: Partial<Omit<Event, 'id' | 'createdAt' | 'userId'>>) => void;
   syncFromSupabase: (events: Event[]) => void;
   promoteToMemory: (event: Event) => void;
+  checkAndPromoteExpiredEvents: () => void;
   clearError: () => void;
 }
 
@@ -80,6 +81,19 @@ export const useEventsStore = create<EventsStore>()(
             .slice(0, MAX_MEMORIES);
           const events = state.events.filter((e) => e.id !== event.id);
           return { events, memories };
+        });
+      },
+
+      checkAndPromoteExpiredEvents: () => {
+        const { events } = get();
+        const expired = events.filter((e) => isPastEvent(e.date));
+        if (expired.length === 0) return;
+        set((state) => {
+          const remaining = state.events.filter((e) => !isPastEvent(e.date));
+          const newMemories = [...expired, ...state.memories]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, MAX_MEMORIES);
+          return { events: remaining, memories: newMemories };
         });
       },
 

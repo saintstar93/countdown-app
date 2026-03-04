@@ -5,12 +5,13 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Appearance } from 'react-native';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { supabase } from '~/services/supabase';
 import { useAuthStore } from '~/store/authStore';
+import { useSettingsStore } from '~/store/settingsStore';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -51,6 +52,11 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { isAuthenticated, setUser } = useAuthStore();
+  const themeMode = useSettingsStore((s) => s.themeMode);
+
+  useEffect(() => {
+    Appearance.setColorScheme(themeMode === 'system' ? null : themeMode);
+  }, [themeMode]);
   const segments = useSegments();
   const router = useRouter();
 
@@ -91,7 +97,7 @@ function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
+        <Stack screenOptions={{ headerBackTitle: '' }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="event/create" options={{ presentation: 'modal', title: 'Nuovo evento' }} />

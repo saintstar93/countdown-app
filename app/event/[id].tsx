@@ -75,6 +75,15 @@ export default function EventDetailScreen() {
           headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F0EEF5' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerTintColor: isDark ? '#9CA3AF' : '#6B7280',
+          headerRight: !isMemory ? () => (
+            <Pressable
+              onPress={() => router.push(`/event/edit/${event.id}`)}
+              hitSlop={8}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, marginRight: 4 })}
+            >
+              <Ionicons name="create-outline" size={24} color="#6366F1" />
+            </Pressable>
+          ) : undefined,
         }}
       />
 
@@ -174,46 +183,22 @@ export default function EventDetailScreen() {
               Foto di {event.imageAuthor} su Unsplash
             </Text>
           )}
-        </View>
 
-        {/* ── Action buttons ── */}
-        <View style={{ marginHorizontal: 16, marginTop: 16, gap: 12 }}>
-          {!isMemory && (
-            <Pressable
-              onPress={() => router.push(`/event/edit/${event.id}`)}
-              style={({ pressed }) => ({
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                backgroundColor: '#6366F1',
-                borderRadius: 14,
-                paddingVertical: 16,
-                opacity: pressed ? 0.75 : 1,
-              })}
-            >
-              <Ionicons name="create-outline" size={18} color="#fff" />
-              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Modifica</Text>
-            </Pressable>
-          )}
+          {/* Divider */}
+          <View style={{ height: 1, backgroundColor: isDark ? '#2A2A2A' : '#E5E7EB' }} />
 
+          {/* Export to calendar */}
           <Pressable
             onPress={handleExport}
             style={({ pressed }) => ({
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              backgroundColor: cardBg,
-              borderRadius: 14,
-              paddingVertical: 16,
-              borderWidth: 1.5,
-              borderColor: isDark ? '#2A2A2A' : '#E5E7EB',
-              opacity: pressed ? 0.65 : 1,
+              gap: 10,
+              opacity: pressed ? 0.55 : 1,
             })}
           >
-            <Ionicons name="calendar-outline" size={18} color={isDark ? '#9CA3AF' : '#6B7280'} />
-            <Text style={{ color: textColor, fontWeight: '600', fontSize: 16 }}>Esporta al calendario</Text>
+            <Ionicons name="calendar-outline" size={18} color={mutedColor} />
+            <Text style={{ fontSize: 15, color: mutedColor, fontWeight: '500' }}>Esporta al calendario</Text>
           </Pressable>
         </View>
 

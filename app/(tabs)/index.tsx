@@ -1,5 +1,6 @@
 import { View, Text, Pressable, useColorScheme } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import PolaroidSwiper from '~/components/PolaroidSwiper';
@@ -10,12 +11,19 @@ export default function HomeScreen() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
   const events = useEventsStore((s) => s.events);
+  const checkAndPromoteExpiredEvents = useEventsStore((s) => s.checkAndPromoteExpiredEvents);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkAndPromoteExpiredEvents();
+    }, [checkAndPromoteExpiredEvents])
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-[#F0EEF5] dark:bg-[#0D0D0D]" edges={['top']}>
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 pt-2 pb-1">
+      <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
         <Pressable
           onPress={() => router.push('/(tabs)/profile')}
           hitSlop={8}
@@ -26,7 +34,7 @@ export default function HomeScreen() {
         </Pressable>
 
         <Text className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-          Countdown
+          Eventi & Ricordi
         </Text>
 
         <Pressable
@@ -39,12 +47,13 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      {/* Subtitle */}
-      <View className="items-center pb-1">
-        <Text className="text-xs text-gray-400 dark:text-gray-500">
-          {events.length > 0
-            ? `${events.length} event${events.length === 1 ? 'o' : 'i'}`
-            : 'Nessun evento · premi + per aggiungere'}
+      {/* Subtitle block */}
+      <View className="px-5 pb-2">
+        <Text className="text-base font-bold text-gray-900 dark:text-white">
+          Prossimi eventi
+        </Text>
+        <Text className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+          Scorri per vedere gli eventi futuri.
         </Text>
       </View>
 
