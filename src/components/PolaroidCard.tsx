@@ -1,30 +1,32 @@
 import { View, Text, Image, Dimensions, useColorScheme } from 'react-native';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import type { ViewStyle } from 'react-native';
-import type { Event, CountdownFormat } from '~/types/event';
-import CountdownDisplay from './CountdownDisplay';
-import { DEFAULT_COUNTDOWN_FORMAT } from '~/constants/countdown';
+import type { Event } from '~/types/event';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-export const CARD_WIDTH = Math.min(Math.round(SCREEN_WIDTH * 0.72), 280);
-const CARD_PADDING = 10;
-export const IMAGE_INNER_SIZE = CARD_WIDTH - CARD_PADDING * 2;
-const BOTTOM_HEIGHT = Math.round(CARD_WIDTH * 0.30);
-export const CARD_HEIGHT = CARD_PADDING + IMAGE_INNER_SIZE + BOTTOM_HEIGHT;
+
+// Polaroid dimensions — wider card, thick bottom strip like a real polaroid
+export const CARD_WIDTH = Math.min(Math.round(SCREEN_WIDTH * 0.78), 300);
+const SIDE_PADDING = 14;     // white border on top and sides
+const BOTTOM_AREA = 88;      // thick white strip at bottom (title + date + location)
+export const IMAGE_SIZE = CARD_WIDTH - SIDE_PADDING * 2;
+export const CARD_HEIGHT = SIDE_PADDING + IMAGE_SIZE + BOTTOM_AREA;
+
+const MONTHS = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
+                'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+
+function formatDate(isoDate: string): string {
+  const d = new Date(isoDate);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
 
 interface PolaroidCardProps {
   event: Event;
-  format?: CountdownFormat;
   animatedStyle?: AnimatedStyle<ViewStyle>;
 }
 
-export default function PolaroidCard({
-  event,
-  format = DEFAULT_COUNTDOWN_FORMAT,
-  animatedStyle,
-}: PolaroidCardProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps) {
+  const isDark = useColorScheme() === 'dark';
 
   return (
     <Animated.View
@@ -32,26 +34,25 @@ export default function PolaroidCard({
         {
           width: CARD_WIDTH,
           height: CARD_HEIGHT,
-          backgroundColor: isDark ? '#2C2C2C' : '#FAFAFA',
-          borderRadius: 3,
-          padding: CARD_PADDING,
+          backgroundColor: isDark ? '#2A2A2A' : '#FFFFFF',
+          borderRadius: 4,
+          padding: SIDE_PADDING,
           paddingBottom: 0,
-          // Shadow
           shadowColor: '#000000',
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: isDark ? 0.45 : 0.18,
-          shadowRadius: 12,
-          elevation: 10,
+          shadowOffset: { width: 3, height: 10 },
+          shadowOpacity: isDark ? 0.55 : 0.22,
+          shadowRadius: 18,
+          elevation: 14,
         },
         animatedStyle,
       ]}
     >
-      {/* Image area */}
+      {/* Photo area — square, fills the top portion */}
       <View
         style={{
-          width: IMAGE_INNER_SIZE,
-          height: IMAGE_INNER_SIZE,
-          backgroundColor: isDark ? '#3A3A3A' : '#E5E7EB',
+          width: IMAGE_SIZE,
+          height: IMAGE_SIZE,
+          backgroundColor: isDark ? '#3A3A3A' : '#D1D5DB',
           overflow: 'hidden',
         }}
       >
@@ -63,40 +64,58 @@ export default function PolaroidCard({
             accessibilityLabel={event.imageAlt ?? event.title}
           />
         ) : (
-          <View
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-          >
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontSize: 48 }}>📸</Text>
           </View>
         )}
       </View>
 
-      {/* Bottom white area: title + countdown */}
+      {/* White bottom strip: title, date (accent), location (gray) */}
       <View
         style={{
-          height: BOTTOM_HEIGHT,
+          height: BOTTOM_AREA,
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 4,
-          paddingHorizontal: 4,
+          gap: 3,
+          paddingHorizontal: 8,
         }}
       >
         <Text
           style={{
-            color: isDark ? '#F5F0E8' : '#1a1a1a',
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: '700',
+            color: isDark ? '#FFFFFF' : '#111827',
             textAlign: 'center',
-            lineHeight: 18,
+            letterSpacing: -0.2,
           }}
-          numberOfLines={2}
+          numberOfLines={1}
         >
           {event.title}
         </Text>
-        <CountdownDisplay
-          targetDate={event.date}
-          format={format}
-        />
+
+        <Text
+          style={{
+            fontSize: 13,
+            fontWeight: '500',
+            color: isDark ? '#6CB8FF' : '#4A90E2',
+            textAlign: 'center',
+          }}
+        >
+          {formatDate(event.date)}
+        </Text>
+
+        {event.location ? (
+          <Text
+            style={{
+              fontSize: 12,
+              color: isDark ? '#9CA3AF' : '#6B7280',
+              textAlign: 'center',
+            }}
+            numberOfLines={1}
+          >
+            {event.location}
+          </Text>
+        ) : null}
       </View>
     </Animated.View>
   );

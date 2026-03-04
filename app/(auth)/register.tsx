@@ -123,7 +123,6 @@ export default function RegisterScreen() {
             onChangeText={(t) => { setName(t); clearFieldError('name'); }}
             placeholder="Come ti chiami?"
             autoCapitalize="words"
-            autoComplete="name"
             error={errors.name}
           />
 

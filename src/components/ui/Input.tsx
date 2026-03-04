@@ -33,7 +33,10 @@ export default function Input({
       >
         <TextInput
           className="flex-1 text-base"
-          style={{ color: colorScheme === 'dark' ? '#ffffff' : '#1a1a1a' }}
+          style={{
+            color: colorScheme === 'dark' ? '#ffffff' : '#1a1a1a',
+            backgroundColor: colorScheme === 'dark' ? '#1F2937' : '#ffffff',
+          }}
           placeholderTextColor="#9CA3AF"
           secureTextEntry={isPassword && !isPasswordVisible}
           autoCapitalize="none"

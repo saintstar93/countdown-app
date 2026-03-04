@@ -56,7 +56,13 @@ function RootLayoutNav() {
 
   // Keep store in sync with Supabase session changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        // Navigate to reset-password WITHOUT updating auth state in store
+        // (prevents route protection from redirecting to (tabs) before user resets)
+        router.replace('/(auth)/reset-password');
+        return;
+      }
       if (session?.user) {
         setUser({
           id: session.user.id,

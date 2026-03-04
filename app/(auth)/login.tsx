@@ -107,6 +107,17 @@ export default function LoginScreen() {
             error={errors.password}
           />
 
+          {/* Forgot password */}
+          <View className="items-end -mt-2 mb-4">
+            <Link href="/(auth)/forgot-password" asChild>
+              <Pressable>
+                <Text className="text-sm text-gray-500 dark:text-gray-400">
+                  Hai dimenticato la password?
+                </Text>
+              </Pressable>
+            </Link>
+          </View>
+
           {errors.general ? (
             <View className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
               <Text className="text-red-600 dark:text-red-400 text-sm text-center">

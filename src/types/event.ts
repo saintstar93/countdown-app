@@ -14,6 +14,7 @@ export interface Event {
   imageAuthor?: string;
   imageAuthorUrl?: string;
   imageObjectFit?: 'contain' | 'cover' | 'center';
+  location?: string;
   tags: Tag[];
   userId: string;
   createdAt: string;

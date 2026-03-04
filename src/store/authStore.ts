@@ -49,10 +49,10 @@ export const useAuthStore = create<AuthStore>()(
           if (session?.user) {
             set({ user: mapSupabaseUser(session.user), isAuthenticated: true, isInitialized: true });
           } else {
-            set({ isInitialized: true });
+            set({ user: null, isAuthenticated: false, isInitialized: true });
           }
         } catch {
-          set({ isInitialized: true });
+          set({ user: null, isAuthenticated: false, isInitialized: true });
         }
       },
 
