@@ -1,5 +1,5 @@
 import { View, useColorScheme } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -94,6 +94,11 @@ export default function PolaroidSwiper({ events, onIndexChange, onEventPress }: 
   const progress = useSharedValue(0);
   const currentIndexSV = useSharedValue(0);
   const eventCountSV = useSharedValue(events.length);
+
+  // Sync eventCountSV when events array changes (e.g. after adding a new event)
+  useEffect(() => {
+    eventCountSV.value = events.length;
+  }, [events.length]);
 
   function updateIndex(next: number) {
     setDisplayIndex(next);
