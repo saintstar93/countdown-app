@@ -1,19 +1,517 @@
-import { View, Text } from 'react-native';
-import type { Event } from '~/types/event';
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Pressable,
+  Image,
+  Platform,
+  useColorScheme,
+  Alert,
+} from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useUiStore } from '~/store/uiStore';
+import { DEFAULT_TAGS } from '~/constants/config';
+import { COUNTDOWN_FORMATS } from '~/constants/countdown';
+import { POLAROID_FONTS } from '~/constants/fonts';
+import { getCountdownValue, formatCountdown } from '~/utils/countdown';
+import type { Event, CountdownFormat, Tag } from '~/types/event';
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const TITLE_MAX = 50;
+const TAG_COLORS = ['#3B82F6','#EC4899','#8B5CF6','#F59E0B','#10B981','#EF4444','#06B6D4','#84CC16'];
+
+const FIT_OPTIONS: { value: NonNullable<Event['imageObjectFit']>; label: string }[] = [
+  { value: 'cover',   label: 'Riempi' },
+  { value: 'contain', label: 'Adatta' },
+  { value: 'center',  label: 'Centra' },
+  { value: 'blur',    label: 'Sfumato' },
+];
+
+const MONTHS_IT = [
+  'Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre',
+];
+
+function formatDateIT(d: Date): string {
+  return `${d.getDate()} ${MONTHS_IT[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function tomorrow(): Date {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface EventFormHandle {
+  submit: () => Omit<Event, 'id' | 'createdAt' | 'updatedAt'> | null;
+}
 
 interface EventFormProps {
-  initialValues?: Partial<Event>;
-  onSubmit: (values: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  isLoading?: boolean;
+  onValidityChange: (isValid: boolean) => void;
 }
 
-// Shared form for create and edit screens — implementation coming in next phase
-export default function EventForm({ isLoading }: EventFormProps) {
+// ─── Sub-component ────────────────────────────────────────────────────────────
+
+function SectionLabel({ children, muted }: { children: string; muted: string }) {
   return (
-    <View className="flex-1 p-4 bg-white dark:bg-gray-900">
-      <Text className="text-gray-500 dark:text-gray-400 text-center">
-        {isLoading ? 'Caricamento...' : 'Form evento (da implementare)'}
-      </Text>
-    </View>
+    <Text style={{
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 1.2,
+      color: muted,
+      textTransform: 'uppercase',
+      marginBottom: 10,
+    }}>
+      {children}
+    </Text>
   );
 }
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+const EventForm = forwardRef<EventFormHandle, EventFormProps>(({ onValidityChange }, ref) => {
+  const isDark = useColorScheme() === 'dark';
+  const router = useRouter();
+
+  // Form state
+  const [title, setTitle] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [countdownFormat, setCountdownFormat] = useState<CountdownFormat>('days');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [customTags, setCustomTags] = useState<Tag[]>([]);
+  const [showNewTag, setShowNewTag] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
+  const [selectedFontKey, setSelectedFontKey] = useState('sans');
+  const [imageUrl, setImageUrl] = useState<string | undefined>();
+  const [imageAlt, setImageAlt] = useState('');
+  const [imageSource, setImageSource] = useState<Event['imageSource']>(undefined);
+  const [imageAuthor, setImageAuthor] = useState('');
+  const [imageAuthorUrl, setImageAuthorUrl] = useState('');
+  const [imageObjectFit, setImageObjectFit] = useState<NonNullable<Event['imageObjectFit']>>('cover');
+
+  // Derived
+  const allTags: Tag[] = [...DEFAULT_TAGS.map(t => ({ ...t })), ...customTags];
+  const selectedFont = POLAROID_FONTS.find(f => f.key === selectedFontKey);
+  const isValid = title.trim().length > 0 && selectedDate !== null && selectedTagIds.length > 0;
+
+  // Theme tokens
+  const bg = isDark ? '#0D0D0D' : '#F0EEF5';
+  const cardBg = isDark ? '#1A1A1A' : '#FFFFFF';
+  const textColor = isDark ? '#FFFFFF' : '#111827';
+  const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
+  const borderColor = isDark ? '#2A2A2A' : '#E5E7EB';
+  const inputBg = isDark ? '#111111' : '#F9F9F9';
+
+  useEffect(() => { onValidityChange(isValid); }, [isValid]);
+
+  // Pick up image selected in image-search modal
+  useFocusEffect(useCallback(() => {
+    const { pendingImage, setPendingImage } = useUiStore.getState();
+    if (pendingImage) {
+      setImageUrl(pendingImage.url);
+      setImageAlt(pendingImage.alt);
+      setImageSource(pendingImage.source);
+      setImageAuthor(pendingImage.authorName);
+      setImageAuthorUrl(pendingImage.authorUrl);
+      setPendingImage(null);
+    }
+  }, []));
+
+  useImperativeHandle(ref, () => ({
+    submit: () => {
+      if (!isValid || !selectedDate) return null;
+      return {
+        title: title.trim(),
+        date: selectedDate.toISOString(),
+        countdownFormat,
+        font: selectedFont?.family,
+        tags: allTags.filter(t => selectedTagIds.includes(t.id)),
+        imageUrl,
+        imageAlt: imageAlt || undefined,
+        imageSource,
+        imageAuthor: imageAuthor || undefined,
+        imageAuthorUrl: imageAuthorUrl || undefined,
+        imageObjectFit,
+        userId: 'local-user',
+      };
+    },
+  }));
+
+  function toggleTag(id: string) {
+    setSelectedTagIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  }
+
+  function addCustomTag() {
+    const name = newTagName.trim();
+    if (!name) return;
+    const tag: Tag = { id: `custom-${Date.now()}`, name, color: newTagColor };
+    setCustomTags(prev => [...prev, tag]);
+    setSelectedTagIds(prev => [...prev, tag.id]);
+    setNewTagName('');
+    setNewTagColor(TAG_COLORS[0]);
+    setShowNewTag(false);
+  }
+
+  async function pickFromGallery() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permesso negato', "Concedi l'accesso alla galleria nelle impostazioni.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.85,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setImageUrl(result.assets[0].uri);
+      setImageAlt('');
+      setImageSource('gallery');
+      setImageAuthor('');
+      setImageAuthorUrl('');
+    }
+  }
+
+  const countdownPreview = selectedDate
+    ? formatCountdown(getCountdownValue(selectedDate.toISOString()), countdownFormat)
+    : null;
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: bg }}
+      contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 48 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {/* ── TITOLO ── */}
+      <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
+        <SectionLabel muted={mutedColor}>Titolo *</SectionLabel>
+        <TextInput
+          style={{
+            fontSize: 17,
+            fontWeight: '500',
+            color: textColor,
+            backgroundColor: inputBg,
+            borderRadius: 10,
+            paddingHorizontal: 14,
+            paddingVertical: 11,
+            borderWidth: 1,
+            borderColor: title.trim() ? '#6366F1' : borderColor,
+          }}
+          placeholder="Nome dell'evento…"
+          placeholderTextColor={mutedColor}
+          value={title}
+          onChangeText={t => setTitle(t.slice(0, TITLE_MAX))}
+          maxLength={TITLE_MAX}
+          returnKeyType="done"
+        />
+        <Text style={{ fontSize: 11, color: mutedColor, textAlign: 'right', marginTop: 4 }}>
+          {title.length}/{TITLE_MAX}
+        </Text>
+      </View>
+
+      {/* ── DATA ── */}
+      <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
+        <SectionLabel muted={mutedColor}>Data *</SectionLabel>
+        <Pressable
+          onPress={() => setShowDatePicker(v => !v)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: inputBg,
+            borderRadius: 10,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            borderWidth: 1,
+            borderColor: selectedDate ? '#6366F1' : borderColor,
+            gap: 10,
+          }}
+        >
+          <Ionicons name="calendar-outline" size={18} color={selectedDate ? '#6366F1' : mutedColor} />
+          <Text style={{ flex: 1, fontSize: 16, color: selectedDate ? textColor : mutedColor }}>
+            {selectedDate ? formatDateIT(selectedDate) : 'Seleziona una data…'}
+          </Text>
+          <Ionicons name={showDatePicker ? 'chevron-up' : 'chevron-down'} size={16} color={mutedColor} />
+        </Pressable>
+
+        {showDatePicker && (
+          <>
+            <DateTimePicker
+              value={selectedDate ?? tomorrow()}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              minimumDate={tomorrow()}
+              locale="it-IT"
+              onChange={(event, date) => {
+                if (Platform.OS === 'android') setShowDatePicker(false);
+                if (event.type === 'set' && date) setSelectedDate(date);
+              }}
+            />
+            {Platform.OS === 'ios' && (
+              <Pressable
+                onPress={() => setShowDatePicker(false)}
+                style={{
+                  alignSelf: 'flex-end',
+                  paddingVertical: 7,
+                  paddingHorizontal: 16,
+                  marginTop: 6,
+                  backgroundColor: '#6366F1',
+                  borderRadius: 8,
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>Conferma</Text>
+              </Pressable>
+            )}
+          </>
+        )}
+      </View>
+
+      {/* ── FORMATO COUNTDOWN ── */}
+      <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
+        <SectionLabel muted={mutedColor}>Formato Countdown</SectionLabel>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {COUNTDOWN_FORMATS.map(f => {
+              const active = countdownFormat === f.value;
+              return (
+                <Pressable
+                  key={f.value}
+                  onPress={() => setCountdownFormat(f.value)}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                    backgroundColor: active ? '#6366F1' : (isDark ? '#2A2A2A' : '#F3F4F6'),
+                  }}
+                >
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: active ? '#fff' : mutedColor }}>
+                    {f.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
+        <View style={{
+          backgroundColor: isDark ? '#111111' : '#F3F4F6',
+          borderRadius: 10,
+          paddingHorizontal: 14,
+          paddingVertical: 12,
+          alignItems: 'center',
+        }}>
+          <Text style={{ fontSize: 15, color: countdownPreview ? textColor : mutedColor, fontStyle: countdownPreview ? 'normal' : 'italic' }}>
+            {countdownPreview ?? 'Seleziona una data per la preview'}
+          </Text>
+        </View>
+      </View>
+
+      {/* ── CATEGORIA ── */}
+      <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
+        <SectionLabel muted={mutedColor}>Categoria *</SectionLabel>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+          {allTags.map(tag => {
+            const active = selectedTagIds.includes(tag.id);
+            return (
+              <Pressable
+                key={tag.id}
+                onPress={() => toggleTag(tag.id)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                  backgroundColor: active ? tag.color : (isDark ? '#2A2A2A' : '#F3F4F6'),
+                  borderWidth: active ? 0 : 1,
+                  borderColor: borderColor,
+                }}
+              >
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: active ? '#fff' : tag.color }} />
+                <Text style={{ fontSize: 14, fontWeight: '500', color: active ? '#fff' : textColor }}>
+                  {tag.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+          <Pressable
+            onPress={() => setShowNewTag(v => !v)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: isDark ? '#3A3A3A' : '#D1D5DB',
+              borderStyle: 'dashed',
+            }}
+          >
+            <Ionicons name="add" size={16} color={mutedColor} />
+            <Text style={{ fontSize: 14, color: mutedColor }}>Nuovo tag</Text>
+          </Pressable>
+        </View>
+
+        {showNewTag && (
+          <View style={{ backgroundColor: isDark ? '#111' : '#F9FAFB', borderRadius: 10, padding: 12, gap: 10, borderWidth: 1, borderColor: borderColor }}>
+            <TextInput
+              style={{ fontSize: 15, color: textColor, backgroundColor: inputBg, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, borderWidth: 1, borderColor: borderColor }}
+              placeholder="Nome del tag…"
+              placeholderTextColor={mutedColor}
+              value={newTagName}
+              onChangeText={setNewTagName}
+              maxLength={20}
+            />
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+              {TAG_COLORS.map(c => (
+                <Pressable
+                  key={c}
+                  onPress={() => setNewTagColor(c)}
+                  style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: c, borderWidth: newTagColor === c ? 3 : 0, borderColor: isDark ? '#fff' : '#1a1a1a' }}
+                />
+              ))}
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+              <Pressable onPress={() => { setShowNewTag(false); setNewTagName(''); }} style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}>
+                <Text style={{ fontSize: 14, color: mutedColor }}>Annulla</Text>
+              </Pressable>
+              <Pressable onPress={addCustomTag} style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: newTagColor, opacity: newTagName.trim() ? 1 : 0.4 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>Aggiungi</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* ── FONT ── */}
+      <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
+        <SectionLabel muted={mutedColor}>Font</SectionLabel>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {POLAROID_FONTS.map(font => {
+              const active = selectedFontKey === font.key;
+              return (
+                <Pressable
+                  key={font.key}
+                  onPress={() => setSelectedFontKey(font.key)}
+                  style={{
+                    width: 100,
+                    paddingVertical: 14,
+                    paddingHorizontal: 8,
+                    borderRadius: 12,
+                    backgroundColor: active ? '#6366F1' : (isDark ? '#2A2A2A' : '#F3F4F6'),
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <Text numberOfLines={1} style={{ fontSize: 14, fontFamily: font.family, color: active ? '#fff' : textColor, fontWeight: '600' }}>
+                    {title.trim() || 'Evento'}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: active ? 'rgba(255,255,255,0.7)' : mutedColor }}>
+                    {font.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* ── IMMAGINE ── */}
+      <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
+        <SectionLabel muted={mutedColor}>Immagine</SectionLabel>
+        {imageUrl ? (
+          <View style={{ gap: 10 }}>
+            <View style={{ borderRadius: 10, overflow: 'hidden', height: 180 }}>
+              <Image source={{ uri: imageUrl }} style={{ flex: 1 }} resizeMode="cover" />
+            </View>
+            <Pressable
+              onPress={() => router.push({ pathname: '/image-search', params: { query: title } })}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}
+            >
+              <Ionicons name="refresh-outline" size={16} color={mutedColor} />
+              <Text style={{ fontSize: 14, color: mutedColor }}>Cambia immagine</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={{ gap: 10 }}>
+            <Pressable
+              onPress={() => router.push({ pathname: '/image-search', params: { query: title } })}
+              style={{ borderRadius: 12, borderWidth: 1.5, borderColor: borderColor, borderStyle: 'dashed', paddingVertical: 32, alignItems: 'center', gap: 8 }}
+            >
+              <Ionicons name="camera-outline" size={32} color={mutedColor} />
+              <Text style={{ fontSize: 15, fontWeight: '500', color: textColor }}>Cerca immagine</Text>
+              <Text style={{ fontSize: 13, color: mutedColor }}>Unsplash · Pexels</Text>
+            </Pressable>
+            <Pressable
+              onPress={pickFromGallery}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 10, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}
+            >
+              <Ionicons name="image-outline" size={16} color={mutedColor} />
+              <Text style={{ fontSize: 14, color: mutedColor }}>Carica dalla galleria</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+
+      {/* ── REGOLA IMMAGINE ── (solo se immagine selezionata) */}
+      {imageUrl && (
+        <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
+          <SectionLabel muted={mutedColor}>Regola Immagine</SectionLabel>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {FIT_OPTIONS.map(opt => {
+              const active = imageObjectFit === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => setImageObjectFit(opt.value)}
+                  style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: active ? '#6366F1' : (isDark ? '#2A2A2A' : '#F3F4F6') }}
+                >
+                  <View style={{ width: 44, height: 44, borderRadius: 6, overflow: 'hidden', backgroundColor: isDark ? '#111' : '#E5E7EB' }}>
+                    {opt.value === 'blur' ? (
+                      <>
+                        <Image source={{ uri: imageUrl }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" blurRadius={8} />
+                        <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+                      </>
+                    ) : (
+                      <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode={opt.value === 'center' ? 'cover' : opt.value} />
+                    )}
+                  </View>
+                  <Text style={{ fontSize: 11, fontWeight: '500', color: active ? '#fff' : mutedColor }}>
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      )}
+
+    </ScrollView>
+  );
+});
+
+EventForm.displayName = 'EventForm';
+export default EventForm;

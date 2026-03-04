@@ -57,12 +57,28 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
         }}
       >
         {event.imageUrl ? (
-          <Image
-            source={{ uri: event.imageUrl }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode={event.imageObjectFit === 'contain' ? 'contain' : 'cover'}
-            accessibilityLabel={event.imageAlt ?? event.title}
-          />
+          <>
+            {/* Blurred background layer (only for blur mode) */}
+            {event.imageObjectFit === 'blur' && (
+              <Image
+                source={{ uri: event.imageUrl }}
+                style={{ position: 'absolute', width: '100%', height: '100%' }}
+                resizeMode="cover"
+                blurRadius={14}
+                accessibilityElementsHidden
+              />
+            )}
+            <Image
+              source={{ uri: event.imageUrl }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode={
+                event.imageObjectFit === 'contain' || event.imageObjectFit === 'blur'
+                  ? 'contain'
+                  : 'cover'
+              }
+              accessibilityLabel={event.imageAlt ?? event.title}
+            />
+          </>
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontSize: 48 }}>📸</Text>
@@ -87,6 +103,7 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
             color: isDark ? '#FFFFFF' : '#111827',
             textAlign: 'center',
             letterSpacing: -0.2,
+            fontFamily: event.font ?? undefined,
           }}
           numberOfLines={1}
         >

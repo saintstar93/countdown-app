@@ -13,8 +13,10 @@ export interface Event {
   imageSource?: 'unsplash' | 'pexels' | 'gallery';
   imageAuthor?: string;
   imageAuthorUrl?: string;
-  imageObjectFit?: 'contain' | 'cover' | 'center';
+  imageObjectFit?: 'contain' | 'cover' | 'center' | 'blur';
   location?: string;
+  countdownFormat?: CountdownFormat;
+  font?: string; // fontFamily string
   tags: Tag[];
   userId: string;
   createdAt: string;

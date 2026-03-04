@@ -38,7 +38,8 @@
         {
           "calendarPermission": "L'app accede al calendario per salvare gli eventi."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
