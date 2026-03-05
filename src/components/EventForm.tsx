@@ -302,34 +302,20 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
         </Pressable>
 
         {showDatePicker && (
-          <>
-            <DateTimePicker
-              value={selectedDate ?? tomorrow()}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              minimumDate={allowPastDate ? undefined : tomorrow()}
-              locale="it-IT"
-              onChange={(event, date) => {
-                if (Platform.OS === 'android') setShowDatePicker(false);
-                if (event.type === 'set' && date) setSelectedDate(date);
-              }}
-            />
-            {Platform.OS === 'ios' && (
-              <Pressable
-                onPress={() => setShowDatePicker(false)}
-                style={{
-                  alignSelf: 'flex-end',
-                  paddingVertical: 7,
-                  paddingHorizontal: 16,
-                  marginTop: 6,
-                  backgroundColor: '#6366F1',
-                  borderRadius: 8,
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>Conferma</Text>
-              </Pressable>
-            )}
-          </>
+          <DateTimePicker
+            value={selectedDate ?? tomorrow()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            minimumDate={allowPastDate ? undefined : tomorrow()}
+            locale="it-IT"
+            onChange={(e, date) => {
+              if (Platform.OS === 'android') setShowDatePicker(false);
+              if (e.type === 'set' && date) {
+                setSelectedDate(date);
+                setShowDatePicker(false);
+              }
+            }}
+          />
         )}
       </View>
 
