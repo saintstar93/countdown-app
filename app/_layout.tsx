@@ -13,6 +13,7 @@ import { supabase } from '~/services/supabase';
 import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
 import { useEventsStore } from '~/store/eventsStore';
+import { requestNotificationPermissions } from '~/services/notifications';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -35,6 +36,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     initialize();
+    requestNotificationPermissions();
   }, []);
 
   useEffect(() => {

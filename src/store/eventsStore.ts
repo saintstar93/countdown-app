@@ -13,11 +13,18 @@ import {
   dbPromoteToMemory,
   dbCreateTag,
 } from '~/services/database';
+import {
+  scheduleEventNotifications,
+  cancelEventNotifications,
+} from '~/services/notifications';
+import { useSettingsStore } from '~/store/settingsStore';
 
 interface EventsStore {
   events: Event[];
   memories: Event[];
   userTags: Tag[];
+  /** Map of eventId → scheduled notification IDs */
+  notificationIds: Record<string, string[]>;
   isLoading: boolean;
   error: string | null;
 
@@ -43,6 +50,7 @@ export const useEventsStore = create<EventsStore>()(
       events: [],
       memories: [],
       userTags: [],
+      notificationIds: {},
       isLoading: false,
       error: null,
 
@@ -81,11 +89,22 @@ export const useEventsStore = create<EventsStore>()(
           set({ isLoading: false, error });
           return error ?? 'Errore sconosciuto';
         }
+
+        // Schedule notifications if enabled
+        const notificationsEnabled = useSettingsStore.getState().notificationsEnabled;
+        let ids: string[] = [];
+        if (notificationsEnabled) {
+          ids = await scheduleEventNotifications(data);
+        }
+
         set((state) => ({
           isLoading: false,
           events: [...state.events, data].sort(
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
           ),
+          notificationIds: ids.length > 0
+            ? { ...state.notificationIds, [data.id]: ids }
+            : state.notificationIds,
         }));
         return null;
       },
@@ -97,11 +116,22 @@ export const useEventsStore = create<EventsStore>()(
           set({ isLoading: false, error });
           return error;
         }
-        set((state) => ({
-          isLoading: false,
-          events: state.events.filter((e) => e.id !== id),
-          memories: state.memories.filter((e) => e.id !== id),
-        }));
+
+        // Cancel notifications
+        const ids = get().notificationIds[id];
+        if (ids?.length) {
+          await cancelEventNotifications(ids);
+        }
+
+        set((state) => {
+          const { [id]: _removed, ...remainingIds } = state.notificationIds;
+          return {
+            isLoading: false,
+            events: state.events.filter((e) => e.id !== id),
+            memories: state.memories.filter((e) => e.id !== id),
+            notificationIds: remainingIds,
+          };
+        });
         return null;
       },
 
@@ -112,12 +142,33 @@ export const useEventsStore = create<EventsStore>()(
           set({ isLoading: false, error });
           return error ?? 'Errore sconosciuto';
         }
-        set((state) => ({
-          isLoading: false,
-          events: state.events
-            .map((e) => (e.id === id ? data : e))
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-        }));
+
+        // If date changed, reschedule notifications
+        if (updates.date !== undefined) {
+          const oldIds = get().notificationIds[id];
+          if (oldIds?.length) {
+            await cancelEventNotifications(oldIds);
+          }
+          const notificationsEnabled = useSettingsStore.getState().notificationsEnabled;
+          let newIds: string[] = [];
+          if (notificationsEnabled) {
+            newIds = await scheduleEventNotifications(data);
+          }
+          set((state) => ({
+            isLoading: false,
+            events: state.events
+              .map((e) => (e.id === id ? data : e))
+              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+            notificationIds: { ...state.notificationIds, [id]: newIds },
+          }));
+        } else {
+          set((state) => ({
+            isLoading: false,
+            events: state.events
+              .map((e) => (e.id === id ? data : e))
+              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+          }));
+        }
         return null;
       },
 
@@ -135,12 +186,23 @@ export const useEventsStore = create<EventsStore>()(
 
         await Promise.all(expired.map((e) => dbPromoteToMemory(e.id)));
 
+        // Cancel notifications for promoted events
+        const { notificationIds } = get();
+        await Promise.all(
+          expired.map((e) => {
+            const ids = notificationIds[e.id];
+            return ids?.length ? cancelEventNotifications(ids) : Promise.resolve();
+          }),
+        );
+
         set((state) => {
           const remaining = state.events.filter((e) => !isPastEvent(e.date));
           const newMemories = [...expired, ...state.memories]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, MAX_MEMORIES);
-          return { events: remaining, memories: newMemories };
+          const cleanedIds = { ...state.notificationIds };
+          expired.forEach((e) => delete cleanedIds[e.id]);
+          return { events: remaining, memories: newMemories, notificationIds: cleanedIds };
         });
       },
 

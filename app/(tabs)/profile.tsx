@@ -1,11 +1,17 @@
-import { View, Text, Pressable, Switch, ScrollView, Alert, useColorScheme } from 'react-native';
+import { View, Text, Pressable, Switch, ScrollView, Alert, Linking, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
+import { useEventsStore } from '~/store/eventsStore';
 import type { ThemeMode } from '~/store/settingsStore';
 import { dbUpdateTheme } from '~/services/database';
+import {
+  cancelAllNotifications,
+  scheduleEventNotifications,
+  getNotificationPermissionStatus,
+} from '~/services/notifications';
 import Constants from 'expo-constants';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
@@ -116,6 +122,40 @@ export default function ProfileScreen() {
   const isDark = useColorScheme() === 'dark';
   const { user, signOut } = useAuthStore();
   const { notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
+  const events = useEventsStore((s) => s.events);
+  const notificationIds = useEventsStore((s) => s.notificationIds);
+
+  async function handleNotificationsToggle(enabled: boolean) {
+    if (enabled) {
+      const status = await getNotificationPermissionStatus();
+      if (status === 'denied') {
+        Alert.alert(
+          'Notifiche disabilitate',
+          'Le notifiche sono state disabilitate nelle impostazioni del telefono. Per attivarle, vai in Impostazioni → Notifiche → Countdown App e abilita le notifiche.',
+          [
+            { text: 'Annulla', style: 'cancel' },
+            { text: 'Apri Impostazioni', onPress: () => Linking.openSettings() },
+          ],
+        );
+        return;
+      }
+      // Reschedule all active events
+      setNotificationsEnabled(true);
+      await Promise.all(
+        events.map((event) => {
+          // Only schedule if not already tracked
+          const existing = notificationIds[event.id];
+          if (!existing?.length) {
+            return scheduleEventNotifications(event);
+          }
+          return Promise.resolve([]);
+        }),
+      );
+    } else {
+      setNotificationsEnabled(false);
+      await cancelAllNotifications();
+    }
+  }
 
   const bg = isDark ? '#0D0D0D' : '#F0EEF5';
   const textColor = isDark ? '#FFFFFF' : '#111827';
@@ -178,7 +218,7 @@ export default function ProfileScreen() {
             right={
               <Switch
                 value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
+                onValueChange={handleNotificationsToggle}
                 trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: '#6366F1' }}
                 thumbColor="#FFFFFF"
               />

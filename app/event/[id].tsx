@@ -1,11 +1,12 @@
-import { View, Text, Image, ScrollView, Pressable, Alert, useColorScheme, Dimensions } from 'react-native';
+import { View, Text, Image, ScrollView, Pressable, Alert, useColorScheme, Dimensions, Animated } from 'react-native';
+import { useRef, useEffect, useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEventsStore } from '~/store/eventsStore';
 import { useCountdown } from '~/hooks/useCountdown';
-import { addEventToCalendar } from '~/services/calendar';
+import { exportEventToCalendar } from '~/services/calendar';
 import { formatDisplayDate } from '~/utils/date';
 import type { Event } from '~/types/event';
 
@@ -58,17 +59,34 @@ export default function EventDetailScreen() {
 
   const isMemory = memories.some((e) => e.id === id);
 
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
+
+  function showToast() {
+    setToastVisible(true);
+    Animated.sequence([
+      Animated.timing(toastOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+      Animated.delay(1800),
+      Animated.timing(toastOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setToastVisible(false));
+  }
+
   async function handleExport() {
-    const result = await addEventToCalendar(event!);
+    const result = await exportEventToCalendar(event!);
     if (result.error) {
       Alert.alert('Errore', result.error);
     } else {
-      Alert.alert('Salvato', "Evento aggiunto al calendario.");
+      showToast();
     }
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['bottom']}>
+      {toastVisible && (
+        <Animated.View style={{ position: 'absolute', bottom: 48, alignSelf: 'center', zIndex: 99, opacity: toastOpacity, backgroundColor: '#1A1A1A', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 24 }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>Evento esportato! 📅</Text>
+        </Animated.View>
+      )}
       <Stack.Screen
         options={{
           title: event.title,
