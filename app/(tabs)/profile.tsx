@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
 import type { ThemeMode } from '~/store/settingsStore';
+import { dbUpdateTheme } from '~/services/database';
 import Constants from 'expo-constants';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
@@ -59,9 +60,17 @@ function Row({ icon, label, iconColor, isDark, right, onPress, isLast, danger }:
   );
 }
 
-function ThemeSelector({ isDark }: { isDark: boolean }) {
+function ThemeSelector({ isDark, userId }: { isDark: boolean; userId?: string }) {
   const themeMode = useSettingsStore((s) => s.themeMode);
   const setThemeMode = useSettingsStore((s) => s.setThemeMode);
+
+  async function handleThemeChange(mode: ThemeMode) {
+    setThemeMode(mode);
+    if (userId) {
+      await dbUpdateTheme(userId, mode);
+    }
+  }
+
   const options: { value: ThemeMode; label: string; icon: string }[] = [
     { value: 'light', label: 'Chiaro', icon: 'sunny-outline' },
     { value: 'system', label: 'Sistema', icon: 'phone-portrait-outline' },
@@ -76,7 +85,7 @@ function ThemeSelector({ isDark }: { isDark: boolean }) {
         return (
           <Pressable
             key={opt.value}
-            onPress={() => setThemeMode(opt.value)}
+            onPress={() => handleThemeChange(opt.value)}
             style={({ pressed }) => ({
               flex: 1,
               alignItems: 'center',
@@ -156,7 +165,7 @@ export default function ProfileScreen() {
           <Text style={{ fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', color: mutedColor, marginBottom: 8, paddingHorizontal: 4 }}>
             Aspetto
           </Text>
-          <ThemeSelector isDark={isDark} />
+          <ThemeSelector isDark={isDark} userId={user?.id} />
         </View>
 
         {/* Notifications */}

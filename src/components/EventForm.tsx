@@ -15,16 +15,19 @@ import {
   Platform,
   useColorScheme,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUiStore } from '~/store/uiStore';
-import { DEFAULT_TAGS } from '~/constants/config';
+import { useEventsStore } from '~/store/eventsStore';
+import { useAuthStore } from '~/store/authStore';
 import { COUNTDOWN_FORMATS } from '~/constants/countdown';
 import { POLAROID_FONTS } from '~/constants/fonts';
 import { getCountdownValue, formatCountdown } from '~/utils/countdown';
+import { dbUploadImage } from '~/services/database';
 import type { Event, CountdownFormat, Tag } from '~/types/event';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -86,14 +89,15 @@ function SectionLabel({ children, muted }: { children: string; muted: string }) 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-const DEFAULT_TAG_IDS = new Set<string>(DEFAULT_TAGS.map((t) => t.id));
-
 const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   ({ onValidityChange, initialValues, allowPastDate }, ref) => {
   const isDark = useColorScheme() === 'dark';
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const userTags = useEventsStore((s) => s.userTags);
+  const addTag = useEventsStore((s) => s.addTag);
 
-  // Form state — lazily initialized from initialValues when present
+  // Form state
   const [title, setTitle] = useState(() => initialValues?.title ?? '');
   const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
     initialValues?.date ? new Date(initialValues.date) : null
@@ -105,12 +109,10 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     () => initialValues?.tags?.map((t) => t.id) ?? []
   );
-  const [customTags, setCustomTags] = useState<Tag[]>(
-    () => initialValues?.tags?.filter((t) => !DEFAULT_TAG_IDS.has(t.id)) ?? []
-  );
   const [showNewTag, setShowNewTag] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
+  const [isAddingTag, setIsAddingTag] = useState(false);
   const [selectedFontKey, setSelectedFontKey] = useState(() => {
     if (!initialValues?.font) return 'sans';
     return POLAROID_FONTS.find((f) => f.family === initialValues.font)?.key ?? 'sans';
@@ -125,9 +127,9 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   const [imageObjectFit, setImageObjectFit] = useState<NonNullable<Event['imageObjectFit']>>(
     () => initialValues?.imageObjectFit ?? 'cover'
   );
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Derived
-  const allTags: Tag[] = [...DEFAULT_TAGS.map(t => ({ ...t })), ...customTags];
   const selectedFont = POLAROID_FONTS.find(f => f.key === selectedFontKey);
   const isValid = title.trim().length > 0 && selectedDate !== null && selectedTagIds.length > 0;
 
@@ -156,20 +158,20 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
 
   useImperativeHandle(ref, () => ({
     submit: () => {
-      if (!isValid || !selectedDate) return null;
+      if (!isValid || !selectedDate || !user) return null;
       return {
         title: title.trim(),
         date: selectedDate.toISOString(),
         countdownFormat,
         font: selectedFont?.family,
-        tags: allTags.filter(t => selectedTagIds.includes(t.id)),
+        tags: userTags.filter(t => selectedTagIds.includes(t.id)),
         imageUrl,
         imageAlt: imageAlt || undefined,
         imageSource,
         imageAuthor: imageAuthor || undefined,
         imageAuthorUrl: imageAuthorUrl || undefined,
         imageObjectFit,
-        userId: 'local-user',
+        userId: user.id,
       };
     },
   }));
@@ -180,12 +182,17 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
     );
   }
 
-  function addCustomTag() {
+  async function handleAddTag() {
     const name = newTagName.trim();
-    if (!name) return;
-    const tag: Tag = { id: `custom-${Date.now()}`, name, color: newTagColor };
-    setCustomTags(prev => [...prev, tag]);
-    setSelectedTagIds(prev => [...prev, tag.id]);
+    if (!name || !user) return;
+    setIsAddingTag(true);
+    const saved = await addTag(user.id, { name, color: newTagColor });
+    setIsAddingTag(false);
+    if (!saved) {
+      Alert.alert('Errore', 'Impossibile salvare il tag. Riprova.');
+      return;
+    }
+    setSelectedTagIds(prev => [...prev, saved.id]);
     setNewTagName('');
     setNewTagColor(TAG_COLORS[0]);
     setShowNewTag(false);
@@ -202,13 +209,32 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
       allowsEditing: true,
       quality: 0.85,
     });
-    if (!result.canceled && result.assets[0]) {
-      setImageUrl(result.assets[0].uri);
-      setImageAlt('');
+    if (result.canceled || !result.assets[0]) return;
+
+    const localUri = result.assets[0].uri;
+
+    if (!user) {
+      // No user yet, just show locally
+      setImageUrl(localUri);
       setImageSource('gallery');
       setImageAuthor('');
       setImageAuthorUrl('');
+      return;
     }
+
+    setIsUploadingImage(true);
+    const { url, error } = await dbUploadImage(user.id, localUri);
+    setIsUploadingImage(false);
+
+    if (error || !url) {
+      Alert.alert('Errore upload', error ?? 'Impossibile caricare l\'immagine');
+      return;
+    }
+    setImageUrl(url);
+    setImageAlt('');
+    setImageSource('gallery');
+    setImageAuthor('');
+    setImageAuthorUrl('');
   }
 
   const countdownPreview = selectedDate
@@ -349,50 +375,60 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
       {/* ── CATEGORIA ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
         <SectionLabel muted={mutedColor}>Categoria *</SectionLabel>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-          {allTags.map(tag => {
-            const active = selectedTagIds.includes(tag.id);
-            return (
-              <Pressable
-                key={tag.id}
-                onPress={() => toggleTag(tag.id)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                  backgroundColor: active ? tag.color : (isDark ? '#2A2A2A' : '#F3F4F6'),
-                  borderWidth: active ? 0 : 1,
-                  borderColor: borderColor,
-                }}
-              >
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: active ? '#fff' : tag.color }} />
-                <Text style={{ fontSize: 14, fontWeight: '500', color: active ? '#fff' : textColor }}>
-                  {tag.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-          <Pressable
-            onPress={() => setShowNewTag(v => !v)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: isDark ? '#3A3A3A' : '#D1D5DB',
-              borderStyle: 'dashed',
-            }}
-          >
-            <Ionicons name="add" size={16} color={mutedColor} />
-            <Text style={{ fontSize: 14, color: mutedColor }}>Nuovo tag</Text>
-          </Pressable>
-        </View>
+
+        {userTags.length === 0 ? (
+          <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+            <ActivityIndicator size="small" color={mutedColor} />
+            <Text style={{ fontSize: 13, color: mutedColor, marginTop: 6 }}>
+              Caricamento tag…
+            </Text>
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+            {userTags.map(tag => {
+              const active = selectedTagIds.includes(tag.id);
+              return (
+                <Pressable
+                  key={tag.id}
+                  onPress={() => toggleTag(tag.id)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                    backgroundColor: active ? tag.color : (isDark ? '#2A2A2A' : '#F3F4F6'),
+                    borderWidth: active ? 0 : 1,
+                    borderColor: borderColor,
+                  }}
+                >
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: active ? '#fff' : tag.color }} />
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: active ? '#fff' : textColor }}>
+                    {tag.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+            <Pressable
+              onPress={() => setShowNewTag(v => !v)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: isDark ? '#3A3A3A' : '#D1D5DB',
+                borderStyle: 'dashed',
+              }}
+            >
+              <Ionicons name="add" size={16} color={mutedColor} />
+              <Text style={{ fontSize: 14, color: mutedColor }}>Nuovo tag</Text>
+            </Pressable>
+          </View>
+        )}
 
         {showNewTag && (
           <View style={{ backgroundColor: isDark ? '#111' : '#F9FAFB', borderRadius: 10, padding: 12, gap: 10, borderWidth: 1, borderColor: borderColor }}>
@@ -414,11 +450,21 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
               ))}
             </View>
             <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
-              <Pressable onPress={() => { setShowNewTag(false); setNewTagName(''); }} style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}>
+              <Pressable
+                onPress={() => { setShowNewTag(false); setNewTagName(''); }}
+                style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}
+              >
                 <Text style={{ fontSize: 14, color: mutedColor }}>Annulla</Text>
               </Pressable>
-              <Pressable onPress={addCustomTag} style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: newTagColor, opacity: newTagName.trim() ? 1 : 0.4 }}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>Aggiungi</Text>
+              <Pressable
+                onPress={handleAddTag}
+                disabled={isAddingTag || !newTagName.trim()}
+                style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: newTagColor, opacity: (newTagName.trim() && !isAddingTag) ? 1 : 0.4, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+              >
+                {isAddingTag && <ActivityIndicator size="small" color="#fff" />}
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>
+                  {isAddingTag ? 'Salvataggio…' : 'Aggiungi'}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -487,16 +533,22 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
             </Pressable>
             <Pressable
               onPress={pickFromGallery}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 10, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}
+              disabled={isUploadingImage}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 10, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6', opacity: isUploadingImage ? 0.6 : 1 }}
             >
-              <Ionicons name="image-outline" size={16} color={mutedColor} />
-              <Text style={{ fontSize: 14, color: mutedColor }}>Carica dalla galleria</Text>
+              {isUploadingImage
+                ? <ActivityIndicator size="small" color={mutedColor} />
+                : <Ionicons name="image-outline" size={16} color={mutedColor} />
+              }
+              <Text style={{ fontSize: 14, color: mutedColor }}>
+                {isUploadingImage ? 'Caricamento…' : 'Carica dalla galleria'}
+              </Text>
             </Pressable>
           </View>
         )}
       </View>
 
-      {/* ── REGOLA IMMAGINE ── (solo se immagine selezionata) */}
+      {/* ── REGOLA IMMAGINE ── */}
       {imageUrl && (
         <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
           <SectionLabel muted={mutedColor}>Regola Immagine</SectionLabel>

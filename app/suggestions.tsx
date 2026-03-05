@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, Alert, ScrollView, useColorScheme, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, Alert, ScrollView, useColorScheme, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '~/store/authStore';
+import { dbCreateSuggestion } from '~/services/database';
 
 export default function SuggestionsScreen() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
+  const user = useAuthStore((s) => s.user);
   const [text, setText] = useState('');
   const [sent, setSent] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const bg = isDark ? '#0D0D0D' : '#F0EEF5';
   const cardBg = isDark ? '#1A1A1A' : '#FFFFFF';
@@ -16,14 +20,23 @@ export default function SuggestionsScreen() {
   const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
   const borderColor = isDark ? '#2A2A2A' : '#E5E7EB';
 
-  function handleSend() {
+  async function handleSend() {
     const trimmed = text.trim();
     if (trimmed.length < 10) {
       Alert.alert('Troppo corto', 'Scrivi almeno 10 caratteri per inviarci il tuo suggerimento.');
       return;
     }
-    // Per ora salviamo localmente; collegheremo a Supabase in seguito
-    console.log('[Suggestion]', trimmed);
+    if (!user) {
+      Alert.alert('Errore', 'Devi essere autenticato per inviare un suggerimento.');
+      return;
+    }
+    setIsSending(true);
+    const { error } = await dbCreateSuggestion(user.id, trimmed);
+    setIsSending(false);
+    if (error) {
+      Alert.alert('Errore', 'Impossibile inviare il suggerimento. Controlla la connessione e riprova.');
+      return;
+    }
     setSent(true);
   }
 
@@ -107,7 +120,7 @@ export default function SuggestionsScreen() {
               </View>
 
               <Pressable
-                onPress={handleSend}
+                onPress={(!isSending && text.trim().length >= 10) ? handleSend : undefined}
                 style={({ pressed }) => ({
                   backgroundColor: text.trim().length >= 10 ? '#6366F1' : (isDark ? '#2A2A2A' : '#E5E7EB'),
                   borderRadius: 14,
@@ -119,17 +132,21 @@ export default function SuggestionsScreen() {
                   opacity: pressed ? 0.75 : 1,
                 })}
               >
-                <Ionicons
-                  name="send-outline"
-                  size={18}
-                  color={text.trim().length >= 10 ? '#FFFFFF' : mutedColor}
-                />
+                {isSending ? (
+                  <ActivityIndicator color={text.trim().length >= 10 ? '#FFFFFF' : mutedColor} />
+                ) : (
+                  <Ionicons
+                    name="send-outline"
+                    size={18}
+                    color={text.trim().length >= 10 ? '#FFFFFF' : mutedColor}
+                  />
+                )}
                 <Text style={{
                   fontWeight: '700',
                   fontSize: 16,
                   color: text.trim().length >= 10 ? '#FFFFFF' : mutedColor,
                 }}>
-                  Invia suggerimento
+                  {isSending ? 'Invio in corso…' : 'Invia suggerimento'}
                 </Text>
               </Pressable>
             </>

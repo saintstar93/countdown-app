@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { supabase } from '~/services/supabase';
 import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
+import { useEventsStore } from '~/store/eventsStore';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -51,14 +52,24 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const { isAuthenticated, setUser } = useAuthStore();
+  const { isAuthenticated, user, setUser } = useAuthStore();
   const themeMode = useSettingsStore((s) => s.themeMode);
+  const loadProfile = useSettingsStore((s) => s.loadProfile);
+  const loadFromSupabase = useEventsStore((s) => s.loadFromSupabase);
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
     Appearance.setColorScheme(themeMode === 'system' ? null : themeMode);
   }, [themeMode]);
-  const segments = useSegments();
-  const router = useRouter();
+
+  // On login: load events, tags and profile from Supabase
+  useEffect(() => {
+    if (user?.id) {
+      loadFromSupabase(user.id);
+      loadProfile(user.id);
+    }
+  }, [user?.id]);
 
   // Keep store in sync with Supabase session changes
   useEffect(() => {

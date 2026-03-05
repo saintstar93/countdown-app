@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
-import { Alert, Text, Pressable, View, useColorScheme } from 'react-native';
+import { Alert, Text, Pressable, View, ActivityIndicator, useColorScheme } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import EventForm, { type EventFormHandle } from '~/components/EventForm';
@@ -9,20 +9,31 @@ export default function EditEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
-  const { events, updateEvent, removeEvent } = useEventsStore();
+  const events = useEventsStore((s) => s.events);
+  const updateEvent = useEventsStore((s) => s.updateEvent);
+  const removeEvent = useEventsStore((s) => s.removeEvent);
   const formRef = useRef<EventFormHandle>(null);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const event = events.find((e) => e.id === id);
 
   const textColor = isDark ? '#FFFFFF' : '#111827';
   const bg = isDark ? '#0D0D0D' : '#F0EEF5';
+  const busy = isSaving || isDeleting;
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     const data = formRef.current?.submit();
     if (!data) return;
-    updateEvent(id, data);
-    router.back();
+    setIsSaving(true);
+    const error = await updateEvent(id, data);
+    setIsSaving(false);
+    if (error) {
+      Alert.alert('Errore', error);
+    } else {
+      router.back();
+    }
   }, [id, updateEvent, router]);
 
   const handleDelete = useCallback(() => {
@@ -34,13 +45,18 @@ export default function EditEventScreen() {
         {
           text: 'Elimina',
           style: 'destructive',
-          onPress: () => {
-            removeEvent(id);
-            // Go back to home (pop 2 screens: edit → detail → home)
-            router.dismiss(2);
+          onPress: async () => {
+            setIsDeleting(true);
+            const error = await removeEvent(id);
+            setIsDeleting(false);
+            if (error) {
+              Alert.alert('Errore', error);
+            } else {
+              router.dismiss(2);
+            }
           },
         },
-      ]
+      ],
     );
   }, [id, removeEvent, router]);
 
@@ -66,13 +82,17 @@ export default function EditEventScreen() {
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerTintColor: isDark ? '#9CA3AF' : '#6B7280',
           headerRight: () => (
-            <Pressable
-              onPress={isFormValid ? handleSave : undefined}
-              hitSlop={12}
-              style={{ opacity: isFormValid ? 1 : 0.35 }}
-            >
-              <Text style={{ color: '#6366F1', fontWeight: '700', fontSize: 16 }}>Salva</Text>
-            </Pressable>
+            isSaving ? (
+              <ActivityIndicator color="#6366F1" />
+            ) : (
+              <Pressable
+                onPress={(isFormValid && !busy) ? handleSave : undefined}
+                hitSlop={12}
+                style={{ opacity: (isFormValid && !busy) ? 1 : 0.35 }}
+              >
+                <Text style={{ color: '#6366F1', fontWeight: '700', fontSize: 16 }}>Salva</Text>
+              </Pressable>
+            )
           ),
         }}
       />
@@ -84,10 +104,10 @@ export default function EditEventScreen() {
         allowPastDate
       />
 
-      {/* Delete button rendered below the form — the EventForm ScrollView handles scrolling */}
-      <View style={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 4, backgroundColor: isDark ? '#0D0D0D' : '#F0EEF5' }}>
+      {/* Delete button */}
+      <View style={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 4, backgroundColor: bg }}>
         <Pressable
-          onPress={handleDelete}
+          onPress={busy ? undefined : handleDelete}
           style={({ pressed }) => ({
             flexDirection: 'row',
             alignItems: 'center',
@@ -96,11 +116,16 @@ export default function EditEventScreen() {
             paddingVertical: 15,
             borderRadius: 14,
             backgroundColor: '#FEE2E2',
-            opacity: pressed ? 0.7 : 1,
+            opacity: busy ? 0.5 : (pressed ? 0.7 : 1),
           })}
         >
-          <Ionicons name="trash-outline" size={18} color="#DC2626" />
-          <Text style={{ color: '#DC2626', fontWeight: '700', fontSize: 15 }}>Elimina evento</Text>
+          {isDeleting
+            ? <ActivityIndicator size="small" color="#DC2626" />
+            : <Ionicons name="trash-outline" size={18} color="#DC2626" />
+          }
+          <Text style={{ color: '#DC2626', fontWeight: '700', fontSize: 15 }}>
+            {isDeleting ? 'Eliminazione…' : 'Elimina evento'}
+          </Text>
         </Pressable>
       </View>
     </>
