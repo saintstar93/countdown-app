@@ -538,6 +538,23 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
       {imageUrl && (
         <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
           <SectionLabel muted={mutedColor}>Regola Immagine</SectionLabel>
+
+          {/* Real-time preview */}
+          <View style={{ height: 180, borderRadius: 10, overflow: 'hidden', backgroundColor: isDark ? '#111' : '#E5E7EB', marginBottom: 12 }}>
+            {imageObjectFit === 'blur' ? (
+              <>
+                <Image source={{ uri: imageUrl }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" blurRadius={12} />
+                <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+              </>
+            ) : (
+              <Image
+                source={{ uri: imageUrl }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode={imageObjectFit === 'center' ? 'cover' : imageObjectFit}
+              />
+            )}
+          </View>
+
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {FIT_OPTIONS.map(opt => {
               const active = imageObjectFit === opt.value;
