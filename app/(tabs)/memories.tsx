@@ -85,7 +85,7 @@ export default function MemoriesScreen() {
   const isDark = useColorScheme() === 'dark';
   const memories = useEventsStore((s) => s.memories);
 
-  const bg = isDark ? '#0D0D0D' : '#F0EEF5';
+  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
   const textColor = isDark ? '#FFFFFF' : '#111827';
   const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
 

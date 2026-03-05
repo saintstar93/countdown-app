@@ -134,12 +134,14 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   const isValid = title.trim().length > 0 && selectedDate !== null && selectedTagIds.length > 0;
 
   // Theme tokens
-  const bg = isDark ? '#0D0D0D' : '#F0EEF5';
+  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
   const cardBg = isDark ? '#1A1A1A' : '#FFFFFF';
   const textColor = isDark ? '#FFFFFF' : '#111827';
   const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
   const borderColor = isDark ? '#2A2A2A' : '#E5E7EB';
-  const inputBg = isDark ? '#111111' : '#F9F9F9';
+  const inputBg = isDark ? '#111111' : '#F5F5F5';
+  const accent = isDark ? '#FFFFFF' : '#111827';
+  const accentText = isDark ? '#111827' : '#FFFFFF';
 
   useEffect(() => { onValidityChange(isValid); }, [isValid]);
 
@@ -263,7 +265,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
             paddingHorizontal: 14,
             paddingVertical: 11,
             borderWidth: 1,
-            borderColor: title.trim() ? '#6366F1' : borderColor,
+            borderColor: title.trim() ? accent : borderColor,
           }}
           placeholder="Nome dell'evento…"
           placeholderTextColor={mutedColor}
@@ -290,11 +292,11 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
             paddingHorizontal: 14,
             paddingVertical: 12,
             borderWidth: 1,
-            borderColor: selectedDate ? '#6366F1' : borderColor,
+            borderColor: selectedDate ? accent : borderColor,
             gap: 10,
           }}
         >
-          <Ionicons name="calendar-outline" size={18} color={selectedDate ? '#6366F1' : mutedColor} />
+          <Ionicons name="calendar-outline" size={18} color={selectedDate ? accent : mutedColor} />
           <Text style={{ flex: 1, fontSize: 16, color: selectedDate ? textColor : mutedColor }}>
             {selectedDate ? formatDateIT(selectedDate) : 'Seleziona una data…'}
           </Text>
@@ -334,10 +336,10 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                     paddingHorizontal: 16,
                     paddingVertical: 8,
                     borderRadius: 20,
-                    backgroundColor: active ? '#6366F1' : (isDark ? '#2A2A2A' : '#F3F4F6'),
+                    backgroundColor: active ? accent : (isDark ? '#2A2A2A' : '#F0F0F0'),
                   }}
                 >
-                  <Text style={{ fontSize: 14, fontWeight: '500', color: active ? '#fff' : mutedColor }}>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: active ? accentText : mutedColor }}>
                     {f.label}
                   </Text>
                 </Pressable>
@@ -445,10 +447,10 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
               <Pressable
                 onPress={handleAddTag}
                 disabled={isAddingTag || !newTagName.trim()}
-                style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: newTagColor, opacity: (newTagName.trim() && !isAddingTag) ? 1 : 0.4, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: accent, opacity: (newTagName.trim() && !isAddingTag) ? 1 : 0.35, flexDirection: 'row', alignItems: 'center', gap: 6 }}
               >
                 {isAddingTag && <ActivityIndicator size="small" color="#fff" />}
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: accentText }}>
                   {isAddingTag ? 'Salvataggio…' : 'Aggiungi'}
                 </Text>
               </Pressable>
@@ -473,15 +475,15 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                     paddingVertical: 14,
                     paddingHorizontal: 8,
                     borderRadius: 12,
-                    backgroundColor: active ? '#6366F1' : (isDark ? '#2A2A2A' : '#F3F4F6'),
+                    backgroundColor: active ? accent : (isDark ? '#2A2A2A' : '#F0F0F0'),
                     alignItems: 'center',
                     gap: 6,
                   }}
                 >
-                  <Text numberOfLines={1} style={{ fontSize: 14, fontFamily: font.family, color: active ? '#fff' : textColor, fontWeight: '600' }}>
+                  <Text numberOfLines={1} style={{ fontSize: 14, fontFamily: font.family, color: active ? accentText : textColor, fontWeight: '600' }}>
                     {title.trim() || 'Evento'}
                   </Text>
-                  <Text style={{ fontSize: 11, color: active ? 'rgba(255,255,255,0.7)' : mutedColor }}>
+                  <Text style={{ fontSize: 11, color: active ? (isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)') : mutedColor }}>
                     {font.label}
                   </Text>
                 </Pressable>

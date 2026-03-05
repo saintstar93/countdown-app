@@ -128,13 +128,14 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
           {event.title}
         </Text>
 
-        {/* Date — blue accent */}
+        {/* Date */}
         <Text
           style={{
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: '500',
-            color: '#4A90E2',
+            color: '#9CA3AF',
             textAlign: 'center',
+            letterSpacing: 0.2,
           }}
         >
           {formatDate(event.date)}

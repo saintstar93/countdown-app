@@ -83,7 +83,8 @@ function ThemeSelector({ isDark, userId }: { isDark: boolean; userId?: string })
     { value: 'dark', label: 'Scuro', icon: 'moon-outline' },
   ];
   const bg = isDark ? '#1A1A1A' : '#FFFFFF';
-  const activeBg = isDark ? '#2D2D2D' : '#F0EEF5';
+  const accent = isDark ? '#FFFFFF' : '#111827';
+  const activeBg = isDark ? '#2A2A2A' : '#F0F0F0';
   return (
     <View style={{ flexDirection: 'row', backgroundColor: bg, borderRadius: 16, padding: 6, gap: 4 }}>
       {options.map((opt) => {
@@ -105,9 +106,9 @@ function ThemeSelector({ isDark, userId }: { isDark: boolean; userId?: string })
             <Ionicons
               name={opt.icon as never}
               size={18}
-              color={active ? '#6366F1' : (isDark ? '#6B7280' : '#9CA3AF')}
+              color={active ? accent : (isDark ? '#6B7280' : '#9CA3AF')}
             />
-            <Text style={{ fontSize: 11, fontWeight: active ? '700' : '500', color: active ? '#6366F1' : (isDark ? '#6B7280' : '#9CA3AF') }}>
+            <Text style={{ fontSize: 11, fontWeight: active ? '700' : '500', color: active ? accent : (isDark ? '#6B7280' : '#9CA3AF') }}>
               {opt.label}
             </Text>
           </Pressable>
@@ -157,7 +158,7 @@ export default function ProfileScreen() {
     }
   }
 
-  const bg = isDark ? '#0D0D0D' : '#F0EEF5';
+  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
   const textColor = isDark ? '#FFFFFF' : '#111827';
   const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
   const cardBg = isDark ? '#1A1A1A' : '#FFFFFF';
@@ -219,8 +220,8 @@ export default function ProfileScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
-                trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: '#6366F1' }}
-                thumbColor="#FFFFFF"
+                trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: isDark ? '#FFFFFF' : '#111827' }}
+                thumbColor={notificationsEnabled && isDark ? '#111827' : '#FFFFFF'}
               />
             }
           />

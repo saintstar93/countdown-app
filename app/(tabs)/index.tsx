@@ -12,6 +12,8 @@ export default function HomeScreen() {
   const isDark = useColorScheme() === 'dark';
   const events = useEventsStore((s) => s.events);
   const checkAndPromoteExpiredEvents = useEventsStore((s) => s.checkAndPromoteExpiredEvents);
+  const iconColor = isDark ? '#FFFFFF' : '#111827';
+  const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
 
   useFocusEffect(
     useCallback(() => {
@@ -20,47 +22,37 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F0EEF5] dark:bg-[#0D0D0D]" edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#0D0D0D' : '#F5F5F5' }} edges={['top']}>
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 }}>
         <Pressable
           onPress={() => router.push('/(tabs)/profile')}
           hitSlop={8}
-          className="active:opacity-60"
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
           accessibilityLabel="Impostazioni"
         >
-          <Ionicons name="settings-outline" size={22} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          <Ionicons name="person-circle-outline" size={26} color={mutedColor} />
         </Pressable>
 
-        <Text className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-          Eventi & Ricordi
+        <Text style={{ fontSize: 17, fontWeight: '700', color: isDark ? '#FFFFFF' : '#111827', letterSpacing: -0.3 }}>
+          Countdown
         </Text>
 
         <Pressable
           onPress={() => router.push('/event/create')}
           hitSlop={8}
-          className="active:opacity-60"
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
           accessibilityLabel="Aggiungi evento"
         >
-          <Ionicons name="add" size={28} color={isDark ? '#A78BFA' : '#6366F1'} />
+          <Ionicons name="add-circle-outline" size={26} color={iconColor} />
         </Pressable>
       </View>
 
-      {/* Subtitle block */}
-      <View className="px-5 pb-2">
-        <Text className="text-base font-bold text-gray-900 dark:text-white">
-          Prossimi eventi
-        </Text>
-        <Text className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-          Scorri per vedere gli eventi futuri.
-        </Text>
-      </View>
-
       {/* Card Stack */}
-      <View className="flex-1">
+      <View style={{ flex: 1 }}>
         {events.length === 0 ? (
-          <EmptyState onAdd={() => router.push('/event/create')} />
+          <EmptyState isDark={isDark} onAdd={() => router.push('/event/create')} />
         ) : (
           <PolaroidSwiper events={events} onEventPress={(e: Event) => router.push(`/event/${e.id}`)} />
         )}
@@ -70,23 +62,31 @@ export default function HomeScreen() {
   );
 }
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState({ isDark, onAdd }: { isDark: boolean; onAdd: () => void }) {
   return (
-    <View className="flex-1 items-center justify-center px-8 gap-6">
-      <Text style={{ fontSize: 64 }}>📸</Text>
-      <View className="items-center gap-2">
-        <Text className="text-xl font-bold text-gray-900 dark:text-white text-center">
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 24 }}>
+      <Text style={{ fontSize: 56 }}>📸</Text>
+      <View style={{ alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 22, fontWeight: '800', color: isDark ? '#FFFFFF' : '#111827', textAlign: 'center', letterSpacing: -0.5 }}>
           Nessun evento
         </Text>
-        <Text className="text-base text-gray-500 dark:text-gray-400 text-center">
-          Aggiungi il tuo primo evento con il tasto +
+        <Text style={{ fontSize: 15, color: isDark ? '#6B7280' : '#9CA3AF', textAlign: 'center', lineHeight: 22 }}>
+          Aggiungi il tuo primo evento
         </Text>
       </View>
       <Pressable
         onPress={onAdd}
-        className="bg-indigo-500 px-8 py-4 rounded-full active:opacity-70"
+        style={({ pressed }) => ({
+          backgroundColor: isDark ? '#FFFFFF' : '#111827',
+          paddingHorizontal: 32,
+          paddingVertical: 15,
+          borderRadius: 100,
+          opacity: pressed ? 0.7 : 1,
+        })}
       >
-        <Text className="text-white font-semibold text-base">Aggiungi evento</Text>
+        <Text style={{ color: isDark ? '#111827' : '#FFFFFF', fontWeight: '700', fontSize: 15 }}>
+          Aggiungi evento
+        </Text>
       </Pressable>
     </View>
   );

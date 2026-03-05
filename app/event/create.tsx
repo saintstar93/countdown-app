@@ -27,7 +27,7 @@ export default function CreateEventScreen() {
   }, [addEvent, router]);
 
   const textColor = isDark ? '#FFFFFF' : '#111827';
-  const accentColor = '#6366F1';
+  const accentColor = isDark ? '#FFFFFF' : '#111827';
   const canSave = isFormValid && !isSaving;
 
   return (
@@ -36,7 +36,7 @@ export default function CreateEventScreen() {
         options={{
           title: 'Nuovo Evento',
           presentation: 'modal',
-          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F0EEF5' },
+          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F5F5F5' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerLeft: () => (
             <Pressable onPress={() => router.back()} hitSlop={12} disabled={isSaving}>

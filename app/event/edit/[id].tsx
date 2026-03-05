@@ -20,7 +20,9 @@ export default function EditEventScreen() {
   const event = events.find((e) => e.id === id);
 
   const textColor = isDark ? '#FFFFFF' : '#111827';
-  const bg = isDark ? '#0D0D0D' : '#F0EEF5';
+  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
+  const accent = isDark ? '#FFFFFF' : '#111827';
+  const accentText = isDark ? '#111827' : '#FFFFFF';
   const busy = isSaving || isDeleting;
 
   const handleSave = useCallback(async () => {
@@ -65,8 +67,8 @@ export default function EditEventScreen() {
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
         <Stack.Screen options={{ title: 'Evento non trovato' }} />
         <Text style={{ color: textColor, fontSize: 16 }}>Evento non trovato.</Text>
-        <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, backgroundColor: '#6366F1', borderRadius: 10 }}>
-          <Text style={{ color: '#fff', fontWeight: '600' }}>Torna indietro</Text>
+        <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, backgroundColor: accent, borderRadius: 100 }}>
+          <Text style={{ color: accentText, fontWeight: '600' }}>Torna indietro</Text>
         </Pressable>
       </View>
     );
@@ -78,19 +80,19 @@ export default function EditEventScreen() {
         options={{
           title: 'Modifica Evento',
           presentation: 'card',
-          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F0EEF5' },
+          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F5F5F5' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerTintColor: isDark ? '#9CA3AF' : '#6B7280',
           headerRight: () => (
             isSaving ? (
-              <ActivityIndicator color="#6366F1" />
+              <ActivityIndicator color={accent} />
             ) : (
               <Pressable
                 onPress={(isFormValid && !busy) ? handleSave : undefined}
                 hitSlop={12}
                 style={{ opacity: (isFormValid && !busy) ? 1 : 0.35 }}
               >
-                <Text style={{ color: '#6366F1', fontWeight: '700', fontSize: 16 }}>Salva</Text>
+                <Text style={{ color: accent, fontWeight: '700', fontSize: 16 }}>Salva</Text>
               </Pressable>
             )
           ),

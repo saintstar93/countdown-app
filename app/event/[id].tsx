@@ -20,7 +20,7 @@ function CountdownRow({ event }: { event: Event }) {
   const isDark = useColorScheme() === 'dark';
   return (
     <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-      <Text style={{ fontSize: 13, fontWeight: '700', letterSpacing: 2, textTransform: 'uppercase', color: '#6366F1', marginBottom: 4 }}>
+      <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 2, textTransform: 'uppercase', color: isDark ? '#6B7280' : '#9CA3AF', marginBottom: 4 }}>
         Mancano
       </Text>
       <Text style={{ fontSize: 32, fontWeight: '800', color: isDark ? '#FFFFFF' : '#111827', letterSpacing: -0.5 }}>
@@ -40,7 +40,7 @@ export default function EventDetailScreen() {
   const memories = useEventsStore((s) => s.memories);
   const event = [...events, ...memories].find((e) => e.id === id);
 
-  const bg = isDark ? '#0D0D0D' : '#F0EEF5';
+  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
   const cardBg = isDark ? '#1A1A1A' : '#FFFFFF';
   const textColor = isDark ? '#FFFFFF' : '#111827';
   const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
@@ -50,8 +50,8 @@ export default function EventDetailScreen() {
       <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
         <Stack.Screen options={{ title: 'Evento non trovato' }} />
         <Text style={{ color: textColor, fontSize: 16 }}>Evento non trovato.</Text>
-        <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, backgroundColor: '#6366F1', borderRadius: 10 }}>
-          <Text style={{ color: '#fff', fontWeight: '600' }}>Torna indietro</Text>
+        <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, backgroundColor: isDark ? '#FFFFFF' : '#111827', borderRadius: 100 }}>
+          <Text style={{ color: isDark ? '#111827' : '#FFFFFF', fontWeight: '600' }}>Torna indietro</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -90,7 +90,7 @@ export default function EventDetailScreen() {
       <Stack.Screen
         options={{
           title: event.title,
-          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F0EEF5' },
+          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F5F5F5' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerTintColor: isDark ? '#9CA3AF' : '#6B7280',
           headerRight: !isMemory ? () => (
@@ -99,7 +99,7 @@ export default function EventDetailScreen() {
               hitSlop={8}
               style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, marginRight: 4 })}
             >
-              <Ionicons name="create-outline" size={24} color="#6366F1" />
+              <Ionicons name="create-outline" size={22} color={isDark ? '#FFFFFF' : '#111827'} />
             </Pressable>
           ) : undefined,
         }}
