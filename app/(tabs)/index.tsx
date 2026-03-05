@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import PolaroidSwiper from '~/components/PolaroidSwiper';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
+import { useAccentColor } from '~/hooks/useAccentColor';
 import type { Event } from '~/types/event';
 
 function getGreeting(): string {
@@ -21,6 +22,7 @@ export default function HomeScreen() {
   const events = useEventsStore((s) => s.events);
   const checkAndPromoteExpiredEvents = useEventsStore((s) => s.checkAndPromoteExpiredEvents);
   const user = useAuthStore((s) => s.user);
+  const accent = useAccentColor();
 
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
@@ -78,7 +80,7 @@ export default function HomeScreen() {
               width: 40,
               height: 40,
               borderRadius: 20,
-              backgroundColor: '#E8754A',
+              backgroundColor: accent,
               alignItems: 'center',
               justifyContent: 'center',
               opacity: pressed ? 0.7 : 1,
@@ -93,7 +95,7 @@ export default function HomeScreen() {
       {/* Card Stack */}
       <View style={{ flex: 1 }}>
         {events.length === 0 ? (
-          <EmptyState isDark={isDark} onAdd={() => router.push('/event/create')} />
+          <EmptyState isDark={isDark} accent={accent} onAdd={() => router.push('/event/create')} />
         ) : (
           <PolaroidSwiper events={events} onEventPress={(e: Event) => router.push(`/event/${e.id}`)} />
         )}
@@ -103,9 +105,8 @@ export default function HomeScreen() {
   );
 }
 
-function EmptyState({ isDark, onAdd }: { isDark: boolean; onAdd: () => void }) {
+function EmptyState({ isDark, accent, onAdd }: { isDark: boolean; accent: string; onAdd: () => void }) {
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
-  const mutedColor = '#9B9B9B';
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 24 }}>
       <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: isDark ? '#333333' : '#EEEEEE', alignItems: 'center', justifyContent: 'center' }}>
@@ -115,14 +116,14 @@ function EmptyState({ isDark, onAdd }: { isDark: boolean; onAdd: () => void }) {
         <Text style={{ fontSize: 22, fontWeight: '800', color: textColor, textAlign: 'center', letterSpacing: -0.5 }}>
           Nessun evento
         </Text>
-        <Text style={{ fontSize: 15, color: mutedColor, textAlign: 'center', lineHeight: 22 }}>
+        <Text style={{ fontSize: 15, color: '#9B9B9B', textAlign: 'center', lineHeight: 22 }}>
           Aggiungi il tuo primo evento e inizia il countdown
         </Text>
       </View>
       <Pressable
         onPress={onAdd}
         style={({ pressed }) => ({
-          backgroundColor: '#E8754A',
+          backgroundColor: accent,
           paddingHorizontal: 32,
           paddingVertical: 15,
           borderRadius: 50,

@@ -8,11 +8,11 @@ import { useEventsStore } from '~/store/eventsStore';
 import { useCountdown } from '~/hooks/useCountdown';
 import { exportEventToCalendar } from '~/services/calendar';
 import { formatDisplayDate } from '~/utils/date';
+import { useAccentColor } from '~/hooks/useAccentColor';
 import type { Event } from '~/types/event';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 const IMAGE_H = SCREEN_H * 0.46;
-const ACCENT = '#E8754A';
 
 // ─── Countdown row ────────────────────────────────────────────────────────────
 
@@ -44,6 +44,7 @@ export default function EventDetailScreen() {
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const cardBg = isDark ? '#242424' : '#FFFFFF';
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
+  const ACCENT = useAccentColor();
 
   const [toastVisible, setToastVisible] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;

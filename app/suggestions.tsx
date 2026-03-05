@@ -4,9 +4,8 @@ import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '~/store/authStore';
+import { useAccentColor } from '~/hooks/useAccentColor';
 import { dbCreateSuggestion } from '~/services/database';
-
-const ACCENT = '#E8754A';
 
 export default function SuggestionsScreen() {
   const router = useRouter();
@@ -15,6 +14,7 @@ export default function SuggestionsScreen() {
   const [text, setText] = useState('');
   const [sent, setSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const ACCENT = useAccentColor();
 
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const cardBg = isDark ? '#242424' : '#FFFFFF';

@@ -24,6 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useUiStore } from '~/store/uiStore';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
+import { useSettingsStore } from '~/store/settingsStore';
 import { COUNTDOWN_FORMATS } from '~/constants/countdown';
 import { POLAROID_FONTS } from '~/constants/fonts';
 import { getCountdownValue, formatCountdown } from '~/utils/countdown';
@@ -140,7 +141,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   const mutedColor = '#9B9B9B';
   const borderColor = isDark ? '#333333' : '#EEEEEE';
   const inputBg = isDark ? '#333333' : '#F0F0F0';
-  const accent = '#E8754A';
+  const accent = useSettingsStore((s) => s.accentColor);
   const accentText = '#FFFFFF';
 
   useEffect(() => { onValidityChange(isValid); }, [isValid]);

@@ -3,8 +3,9 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '~/store/authStore';
-import { useSettingsStore } from '~/store/settingsStore';
+import { useSettingsStore, ACCENT_COLORS } from '~/store/settingsStore';
 import { useEventsStore } from '~/store/eventsStore';
+import { useAccentColor } from '~/hooks/useAccentColor';
 import type { ThemeMode } from '~/store/settingsStore';
 import { dbUpdateTheme } from '~/services/database';
 import {
@@ -15,8 +16,6 @@ import {
 import Constants from 'expo-constants';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
-
-const ACCENT = '#E8754A';
 
 type SectionProps = { title: string; children: React.ReactNode; isDark: boolean };
 
@@ -57,38 +56,40 @@ function Row({ icon, label, iconColor, isDark, right, onPress, isLast, danger }:
   const textColor = danger ? '#EF4444' : (isDark ? '#F5F5F5' : '#2D2D2D');
   const divColor = isDark ? '#333333' : '#F0F0F0';
   const iconBg = isDark ? '#333333' : '#F0F0F0';
+
+  const rightEl = right !== undefined
+    ? right
+    : onPress
+      ? <Ionicons name="chevron-forward" size={15} color={isDark ? '#555555' : '#CCCCCC'} />
+      : null;
+
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 18,
-        paddingVertical: 15,
-        gap: 14,
         opacity: pressed && onPress ? 0.6 : 1,
         borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: divColor,
       })}
     >
-      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
-        <Ionicons name={icon as never} size={17} color={iconColor ?? (isDark ? '#AAAAAA' : '#6B7280')} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingVertical: 15, gap: 14 }}>
+        <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name={icon as never} size={17} color={iconColor ?? (isDark ? '#AAAAAA' : '#6B7280')} />
+        </View>
+        <Text style={{ flex: 1, fontSize: 15, fontWeight: '500', color: textColor }}>{label}</Text>
+        {rightEl}
       </View>
-      <Text style={{ flex: 1, fontSize: 15, fontWeight: '500', color: textColor }}>{label}</Text>
-      {right ?? (onPress ? <Ionicons name="chevron-forward" size={15} color={isDark ? '#555555' : '#CCCCCC'} /> : null)}
     </Pressable>
   );
 }
 
-function ThemeSelector({ isDark, userId }: { isDark: boolean; userId?: string }) {
+function ThemeSelector({ isDark, userId, accent }: { isDark: boolean; userId?: string; accent: string }) {
   const themeMode = useSettingsStore((s) => s.themeMode);
   const setThemeMode = useSettingsStore((s) => s.setThemeMode);
 
   async function handleThemeChange(mode: ThemeMode) {
     setThemeMode(mode);
-    if (userId) {
-      await dbUpdateTheme(userId, mode);
-    }
+    if (userId) await dbUpdateTheme(userId, mode);
   }
 
   const options: { value: ThemeMode; label: string; icon: string }[] = [
@@ -122,21 +123,61 @@ function ThemeSelector({ isDark, userId }: { isDark: boolean; userId?: string })
               paddingVertical: 10,
               borderRadius: 14,
               gap: 4,
-              backgroundColor: active ? (isDark ? '#333333' : '#F5F0EC') : 'transparent',
+              backgroundColor: active ? (isDark ? '#333333' : accent + '18') : 'transparent',
               opacity: pressed ? 0.7 : 1,
             })}
           >
-            <Ionicons
-              name={opt.icon as never}
-              size={18}
-              color={active ? ACCENT : '#9B9B9B'}
-            />
-            <Text style={{ fontSize: 11, fontWeight: active ? '700' : '500', color: active ? ACCENT : '#9B9B9B' }}>
+            <Ionicons name={opt.icon as never} size={18} color={active ? accent : '#9B9B9B'} />
+            <Text style={{ fontSize: 11, fontWeight: active ? '700' : '500', color: active ? accent : '#9B9B9B' }}>
               {opt.label}
             </Text>
           </Pressable>
         );
       })}
+    </View>
+  );
+}
+
+function AccentPicker({ isDark, accent }: { isDark: boolean; accent: string }) {
+  const setAccentColor = useSettingsStore((s) => s.setAccentColor);
+
+  return (
+    <View style={{ marginBottom: 28 }}>
+      <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 10, paddingHorizontal: 4 }}>
+        Colore tema
+      </Text>
+      <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+        {ACCENT_COLORS.map((color) => {
+          const active = accent === color.value;
+          return (
+            <Pressable
+              key={color.key}
+              onPress={() => setAccentColor(color.value)}
+              style={({ pressed }) => ({
+                alignItems: 'center',
+                gap: 6,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <View style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: color.value,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: active ? 3 : 0,
+                borderColor: isDark ? '#FFFFFF' : '#2D2D2D',
+              }}>
+                {active && <Ionicons name="checkmark" size={20} color="#FFFFFF" />}
+              </View>
+              <Text style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? (isDark ? '#F5F5F5' : '#2D2D2D') : '#9B9B9B' }}>
+                {color.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -148,6 +189,7 @@ export default function ProfileScreen() {
   const { notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
   const events = useEventsStore((s) => s.events);
   const notificationIds = useEventsStore((s) => s.notificationIds);
+  const accent = useAccentColor();
 
   async function handleNotificationsToggle(enabled: boolean) {
     if (enabled) {
@@ -167,9 +209,7 @@ export default function ProfileScreen() {
       await Promise.all(
         events.map((event) => {
           const existing = notificationIds[event.id];
-          if (!existing?.length) {
-            return scheduleEventNotifications(event);
-          }
+          if (!existing?.length) return scheduleEventNotifications(event);
           return Promise.resolve([]);
         }),
       );
@@ -189,11 +229,7 @@ export default function ProfileScreen() {
   async function handleLogout() {
     Alert.alert('Logout', 'Sei sicuro di voler uscire?', [
       { text: 'Annulla', style: 'cancel' },
-      {
-        text: 'Esci',
-        style: 'destructive',
-        onPress: async () => { await signOut(); },
-      },
+      { text: 'Esci', style: 'destructive', onPress: async () => { await signOut(); } },
     ]);
   }
 
@@ -221,16 +257,14 @@ export default function ProfileScreen() {
           shadowRadius: 20,
           elevation: 4,
         }}>
-          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: ACCENT, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: accent, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontSize: 22, fontWeight: '700', color: '#FFFFFF' }}>
               {displayName.charAt(0).toUpperCase()}
             </Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 17, fontWeight: '700', color: textColor }}>{displayName}</Text>
-            {email ? (
-              <Text style={{ fontSize: 13, color: '#9B9B9B', marginTop: 2 }}>{email}</Text>
-            ) : null}
+            {email ? <Text style={{ fontSize: 13, color: '#9B9B9B', marginTop: 2 }}>{email}</Text> : null}
           </View>
         </View>
 
@@ -239,8 +273,11 @@ export default function ProfileScreen() {
           <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 10, paddingHorizontal: 4 }}>
             Aspetto
           </Text>
-          <ThemeSelector isDark={isDark} userId={user?.id} />
+          <ThemeSelector isDark={isDark} userId={user?.id} accent={accent} />
         </View>
+
+        {/* Accent color picker */}
+        <AccentPicker isDark={isDark} accent={accent} />
 
         {/* Notifications */}
         <Section title="Notifiche" isDark={isDark}>
@@ -253,7 +290,7 @@ export default function ProfileScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
-                trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: ACCENT }}
+                trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: accent }}
                 thumbColor="#FFFFFF"
               />
             }
@@ -289,7 +326,6 @@ export default function ProfileScreen() {
           />
         </Section>
 
-        {/* Credits */}
         <Text style={{ fontSize: 12, color: '#9B9B9B', textAlign: 'center', lineHeight: 18 }}>
           Fatto con ♥ · Immagini da Unsplash
         </Text>

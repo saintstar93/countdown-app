@@ -13,6 +13,7 @@ import Animated, {
 import { Dimensions } from 'react-native';
 import type { Event } from '~/types/event';
 import PolaroidCard, { CARD_WIDTH, CARD_HEIGHT } from './PolaroidCard';
+import { useSettingsStore } from '~/store/settingsStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -155,7 +156,7 @@ export default function PolaroidSwiper({ events, onIndexChange, onEventPress }: 
   const composed = Gesture.Race(panGesture, tapGesture);
 
   const isDark = useColorScheme() === 'dark';
-  const dotActive = '#E8754A';
+  const dotActive = useSettingsStore((s) => s.accentColor);
   const dotInactive = isDark ? '#3A3A3A' : '#D4D4D4';
 
   return (

@@ -4,8 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
-
-const ACCENT = '#E8754A';
+import { useAccentColor } from '~/hooks/useAccentColor';
 
 export default function CreateEventScreen() {
   const router = useRouter();
@@ -28,6 +27,7 @@ export default function CreateEventScreen() {
     }
   }, [addEvent, router]);
 
+  const ACCENT = useAccentColor();
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
   const canSave = isFormValid && !isSaving;
 

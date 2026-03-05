@@ -4,8 +4,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
-
-const ACCENT = '#E8754A';
+import { useAccentColor } from '~/hooks/useAccentColor';
 
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +20,7 @@ export default function EditEventScreen() {
 
   const event = events.find((e) => e.id === id);
 
+  const ACCENT = useAccentColor();
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const busy = isSaving || isDeleting;
