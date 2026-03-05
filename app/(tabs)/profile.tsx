@@ -16,15 +16,26 @@ import Constants from 'expo-constants';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
+const ACCENT = '#E8754A';
+
 type SectionProps = { title: string; children: React.ReactNode; isDark: boolean };
 
 function Section({ title, children, isDark }: SectionProps) {
   return (
     <View style={{ marginBottom: 24 }}>
-      <Text style={{ fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', color: isDark ? '#6B7280' : '#9CA3AF', marginBottom: 8, paddingHorizontal: 4 }}>
+      <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 10, paddingHorizontal: 4 }}>
         {title}
       </Text>
-      <View style={{ backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF', borderRadius: 16, overflow: 'hidden' }}>
+      <View style={{
+        backgroundColor: isDark ? '#242424' : '#FFFFFF',
+        borderRadius: 20,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: isDark ? 0.2 : 0.06,
+        shadowRadius: 20,
+        elevation: 4,
+      }}>
         {children}
       </View>
     </View>
@@ -43,25 +54,28 @@ type RowProps = {
 };
 
 function Row({ icon, label, iconColor, isDark, right, onPress, isLast, danger }: RowProps) {
-  const textColor = danger ? '#EF4444' : (isDark ? '#FFFFFF' : '#111827');
-  const divColor = isDark ? '#2A2A2A' : '#F3F4F6';
+  const textColor = danger ? '#EF4444' : (isDark ? '#F5F5F5' : '#2D2D2D');
+  const divColor = isDark ? '#333333' : '#F0F0F0';
+  const iconBg = isDark ? '#333333' : '#F0F0F0';
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        gap: 12,
+        paddingHorizontal: 18,
+        paddingVertical: 15,
+        gap: 14,
         opacity: pressed && onPress ? 0.6 : 1,
         borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: divColor,
       })}
     >
-      <Ionicons name={icon as never} size={20} color={iconColor ?? (isDark ? '#9CA3AF' : '#6B7280')} />
+      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
+        <Ionicons name={icon as never} size={17} color={iconColor ?? (isDark ? '#AAAAAA' : '#6B7280')} />
+      </View>
       <Text style={{ flex: 1, fontSize: 15, fontWeight: '500', color: textColor }}>{label}</Text>
-      {right ?? (onPress ? <Ionicons name="chevron-forward" size={16} color={isDark ? '#4B5563' : '#D1D5DB'} /> : null)}
+      {right ?? (onPress ? <Ionicons name="chevron-forward" size={15} color={isDark ? '#555555' : '#CCCCCC'} /> : null)}
     </Pressable>
   );
 }
@@ -82,11 +96,20 @@ function ThemeSelector({ isDark, userId }: { isDark: boolean; userId?: string })
     { value: 'system', label: 'Sistema', icon: 'phone-portrait-outline' },
     { value: 'dark', label: 'Scuro', icon: 'moon-outline' },
   ];
-  const bg = isDark ? '#1A1A1A' : '#FFFFFF';
-  const accent = isDark ? '#FFFFFF' : '#111827';
-  const activeBg = isDark ? '#2A2A2A' : '#F0F0F0';
+
   return (
-    <View style={{ flexDirection: 'row', backgroundColor: bg, borderRadius: 16, padding: 6, gap: 4 }}>
+    <View style={{
+      flexDirection: 'row',
+      backgroundColor: isDark ? '#242424' : '#FFFFFF',
+      borderRadius: 20,
+      padding: 6,
+      gap: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: isDark ? 0.2 : 0.06,
+      shadowRadius: 20,
+      elevation: 4,
+    }}>
       {options.map((opt) => {
         const active = themeMode === opt.value;
         return (
@@ -97,18 +120,18 @@ function ThemeSelector({ isDark, userId }: { isDark: boolean; userId?: string })
               flex: 1,
               alignItems: 'center',
               paddingVertical: 10,
-              borderRadius: 10,
+              borderRadius: 14,
               gap: 4,
-              backgroundColor: active ? activeBg : 'transparent',
+              backgroundColor: active ? (isDark ? '#333333' : '#F5F0EC') : 'transparent',
               opacity: pressed ? 0.7 : 1,
             })}
           >
             <Ionicons
               name={opt.icon as never}
               size={18}
-              color={active ? accent : (isDark ? '#6B7280' : '#9CA3AF')}
+              color={active ? ACCENT : '#9B9B9B'}
             />
-            <Text style={{ fontSize: 11, fontWeight: active ? '700' : '500', color: active ? accent : (isDark ? '#6B7280' : '#9CA3AF') }}>
+            <Text style={{ fontSize: 11, fontWeight: active ? '700' : '500', color: active ? ACCENT : '#9B9B9B' }}>
               {opt.label}
             </Text>
           </Pressable>
@@ -140,11 +163,9 @@ export default function ProfileScreen() {
         );
         return;
       }
-      // Reschedule all active events
       setNotificationsEnabled(true);
       await Promise.all(
         events.map((event) => {
-          // Only schedule if not already tracked
           const existing = notificationIds[event.id];
           if (!existing?.length) {
             return scheduleEventNotifications(event);
@@ -158,10 +179,9 @@ export default function ProfileScreen() {
     }
   }
 
-  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
-  const textColor = isDark ? '#FFFFFF' : '#111827';
-  const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
-  const cardBg = isDark ? '#1A1A1A' : '#FFFFFF';
+  const bg = isDark ? '#1A1A1A' : '#F5F5F0';
+  const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
+  const cardBg = isDark ? '#242424' : '#FFFFFF';
 
   const displayName = user?.displayName ?? user?.email?.split('@')[0] ?? 'Utente';
   const email = user?.email ?? '';
@@ -179,7 +199,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 22, paddingBottom: 48 }}>
 
         {/* Header */}
         <Text style={{ fontSize: 28, fontWeight: '800', color: textColor, letterSpacing: -0.5, marginBottom: 24 }}>
@@ -187,8 +207,21 @@ export default function ProfileScreen() {
         </Text>
 
         {/* User card */}
-        <View style={{ backgroundColor: cardBg, borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#6366F1', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{
+          backgroundColor: cardBg,
+          borderRadius: 24,
+          padding: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 14,
+          marginBottom: 28,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isDark ? 0.2 : 0.06,
+          shadowRadius: 20,
+          elevation: 4,
+        }}>
+          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: ACCENT, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontSize: 22, fontWeight: '700', color: '#FFFFFF' }}>
               {displayName.charAt(0).toUpperCase()}
             </Text>
@@ -196,14 +229,14 @@ export default function ProfileScreen() {
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 17, fontWeight: '700', color: textColor }}>{displayName}</Text>
             {email ? (
-              <Text style={{ fontSize: 13, color: mutedColor, marginTop: 2 }}>{email}</Text>
+              <Text style={{ fontSize: 13, color: '#9B9B9B', marginTop: 2 }}>{email}</Text>
             ) : null}
           </View>
         </View>
 
         {/* Appearance */}
-        <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', color: mutedColor, marginBottom: 8, paddingHorizontal: 4 }}>
+        <View style={{ marginBottom: 28 }}>
+          <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 10, paddingHorizontal: 4 }}>
             Aspetto
           </Text>
           <ThemeSelector isDark={isDark} userId={user?.id} />
@@ -220,8 +253,8 @@ export default function ProfileScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
-                trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: isDark ? '#FFFFFF' : '#111827' }}
-                thumbColor={notificationsEnabled && isDark ? '#111827' : '#FFFFFF'}
+                trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: ACCENT }}
+                thumbColor="#FFFFFF"
               />
             }
           />
@@ -257,7 +290,7 @@ export default function ProfileScreen() {
         </Section>
 
         {/* Credits */}
-        <Text style={{ fontSize: 12, color: mutedColor, textAlign: 'center', lineHeight: 18 }}>
+        <Text style={{ fontSize: 12, color: '#9B9B9B', textAlign: 'center', lineHeight: 18 }}>
           Fatto con ♥ · Immagini da Unsplash
         </Text>
 

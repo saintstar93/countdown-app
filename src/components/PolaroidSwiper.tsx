@@ -155,7 +155,7 @@ export default function PolaroidSwiper({ events, onIndexChange, onEventPress }: 
   const composed = Gesture.Race(panGesture, tapGesture);
 
   const isDark = useColorScheme() === 'dark';
-  const dotActive = isDark ? '#FFFFFF' : '#111827';
+  const dotActive = '#E8754A';
   const dotInactive = isDark ? '#3A3A3A' : '#D4D4D4';
 
   return (

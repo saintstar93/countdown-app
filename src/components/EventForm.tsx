@@ -134,14 +134,14 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   const isValid = title.trim().length > 0 && selectedDate !== null && selectedTagIds.length > 0;
 
   // Theme tokens
-  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
-  const cardBg = isDark ? '#1A1A1A' : '#FFFFFF';
-  const textColor = isDark ? '#FFFFFF' : '#111827';
-  const mutedColor = isDark ? '#6B7280' : '#9CA3AF';
-  const borderColor = isDark ? '#2A2A2A' : '#E5E7EB';
-  const inputBg = isDark ? '#111111' : '#F5F5F5';
-  const accent = isDark ? '#FFFFFF' : '#111827';
-  const accentText = isDark ? '#111827' : '#FFFFFF';
+  const bg = isDark ? '#1A1A1A' : '#F5F5F0';
+  const cardBg = isDark ? '#242424' : '#FFFFFF';
+  const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
+  const mutedColor = '#9B9B9B';
+  const borderColor = isDark ? '#333333' : '#EEEEEE';
+  const inputBg = isDark ? '#333333' : '#F0F0F0';
+  const accent = '#E8754A';
+  const accentText = '#FFFFFF';
 
   useEffect(() => { onValidityChange(isValid); }, [isValid]);
 
@@ -564,7 +564,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                 <Pressable
                   key={opt.value}
                   onPress={() => setImageObjectFit(opt.value)}
-                  style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: active ? '#6366F1' : (isDark ? '#2A2A2A' : '#F3F4F6') }}
+                  style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: active ? '#E8754A' : (isDark ? '#2A2A2A' : '#F3F4F6') }}
                 >
                   <View style={{ width: 44, height: 44, borderRadius: 6, overflow: 'hidden', backgroundColor: isDark ? '#111' : '#E5E7EB' }}>
                     {opt.value === 'blur' ? (

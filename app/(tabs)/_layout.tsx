@@ -10,11 +10,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: isDark ? '#A78BFA' : '#6366F1',
-        tabBarInactiveTintColor: isDark ? '#888888' : '#aaaaaa',
+        tabBarActiveTintColor: '#E8754A',
+        tabBarInactiveTintColor: isDark ? '#555555' : '#AAAAAA',
         tabBarStyle: {
-          backgroundColor: isDark ? '#111111' : '#ffffff',
-          borderTopColor: isDark ? '#333333' : '#eeeeee',
+          backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
+          borderTopColor: isDark ? '#2A2A2A' : '#F0F0F0',
+          borderTopWidth: 1,
         },
       }}
     >
@@ -32,7 +33,7 @@ export default function TabLayout() {
         options={{
           title: 'Ricordi',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="images-outline" size={size} color={color} />
+            <Ionicons name="heart-outline" size={size} color={color} />
           ),
         }}
       />

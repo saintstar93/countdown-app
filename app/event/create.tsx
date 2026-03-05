@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
 
+const ACCENT = '#E8754A';
+
 export default function CreateEventScreen() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
@@ -26,8 +28,7 @@ export default function CreateEventScreen() {
     }
   }, [addEvent, router]);
 
-  const textColor = isDark ? '#FFFFFF' : '#111827';
-  const accentColor = isDark ? '#FFFFFF' : '#111827';
+  const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
   const canSave = isFormValid && !isSaving;
 
   return (
@@ -36,23 +37,23 @@ export default function CreateEventScreen() {
         options={{
           title: 'Nuovo Evento',
           presentation: 'modal',
-          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F5F5F5' },
+          headerStyle: { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F0' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerLeft: () => (
             <Pressable onPress={() => router.back()} hitSlop={12} disabled={isSaving}>
-              <Ionicons name="close" size={22} color={textColor} />
+              <Ionicons name="close" size={22} color="#9B9B9B" />
             </Pressable>
           ),
           headerRight: () => (
             isSaving ? (
-              <ActivityIndicator color={accentColor} />
+              <ActivityIndicator color={ACCENT} />
             ) : (
               <Pressable
                 onPress={canSave ? handleSave : undefined}
                 hitSlop={12}
                 style={{ opacity: canSave ? 1 : 0.35 }}
               >
-                <Text style={{ color: accentColor, fontWeight: '700', fontSize: 16 }}>
+                <Text style={{ color: ACCENT, fontWeight: '700', fontSize: 16 }}>
                   Salva
                 </Text>
               </Pressable>

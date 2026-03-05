@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
 
+const ACCENT = '#E8754A';
+
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -19,10 +21,8 @@ export default function EditEventScreen() {
 
   const event = events.find((e) => e.id === id);
 
-  const textColor = isDark ? '#FFFFFF' : '#111827';
-  const bg = isDark ? '#0D0D0D' : '#F5F5F5';
-  const accent = isDark ? '#FFFFFF' : '#111827';
-  const accentText = isDark ? '#111827' : '#FFFFFF';
+  const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
+  const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const busy = isSaving || isDeleting;
 
   const handleSave = useCallback(async () => {
@@ -67,8 +67,8 @@ export default function EditEventScreen() {
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
         <Stack.Screen options={{ title: 'Evento non trovato' }} />
         <Text style={{ color: textColor, fontSize: 16 }}>Evento non trovato.</Text>
-        <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, backgroundColor: accent, borderRadius: 100 }}>
-          <Text style={{ color: accentText, fontWeight: '600' }}>Torna indietro</Text>
+        <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: ACCENT, borderRadius: 50 }}>
+          <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Torna indietro</Text>
         </Pressable>
       </View>
     );
@@ -80,19 +80,19 @@ export default function EditEventScreen() {
         options={{
           title: 'Modifica Evento',
           presentation: 'card',
-          headerStyle: { backgroundColor: isDark ? '#0D0D0D' : '#F5F5F5' },
+          headerStyle: { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F0' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
-          headerTintColor: isDark ? '#9CA3AF' : '#6B7280',
+          headerTintColor: '#9B9B9B',
           headerRight: () => (
             isSaving ? (
-              <ActivityIndicator color={accent} />
+              <ActivityIndicator color={ACCENT} />
             ) : (
               <Pressable
                 onPress={(isFormValid && !busy) ? handleSave : undefined}
                 hitSlop={12}
                 style={{ opacity: (isFormValid && !busy) ? 1 : 0.35 }}
               >
-                <Text style={{ color: accent, fontWeight: '700', fontSize: 16 }}>Salva</Text>
+                <Text style={{ color: ACCENT, fontWeight: '700', fontSize: 16 }}>Salva</Text>
               </Pressable>
             )
           ),
@@ -107,7 +107,7 @@ export default function EditEventScreen() {
       />
 
       {/* Delete button */}
-      <View style={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 4, backgroundColor: bg }}>
+      <View style={{ paddingHorizontal: 20, paddingBottom: 32, paddingTop: 4, backgroundColor: bg }}>
         <Pressable
           onPress={busy ? undefined : handleDelete}
           style={({ pressed }) => ({
@@ -116,7 +116,7 @@ export default function EditEventScreen() {
             justifyContent: 'center',
             gap: 8,
             paddingVertical: 15,
-            borderRadius: 14,
+            borderRadius: 50,
             backgroundColor: '#FEE2E2',
             opacity: busy ? 0.5 : (pressed ? 0.7 : 1),
           })}
