@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, Pressable, Alert, useColorScheme, Dimensions, Animated, Platform } from 'react-native';
+import { View, Text, Image, ScrollView, Pressable, Alert, Dimensions, Animated, Platform } from 'react-native';
 import { useRef, useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { useCountdown } from '~/hooks/useCountdown';
 import { exportEventToCalendar } from '~/services/calendar';
 import { formatDisplayDate } from '~/utils/date';
 import { useAccentColor } from '~/hooks/useAccentColor';
+import { useIsDark } from '~/hooks/useTheme';
 import type { Event } from '~/types/event';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
@@ -20,7 +21,7 @@ const IMAGE_H = SCREEN_H * 0.46;
 
 function CountdownRow({ event }: { event: Event }) {
   const { formatted } = useCountdown(event.date, event.countdownFormat ?? 'days');
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   return (
     <View style={{ alignItems: 'center', paddingVertical: 22 }}>
       <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 6 }}>
@@ -38,7 +39,7 @@ function CountdownRow({ event }: { event: Event }) {
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const events = useEventsStore((s) => s.events);
   const memories = useEventsStore((s) => s.memories);
   const removeEvent = useEventsStore((s) => s.removeEvent);

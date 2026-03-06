@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Switch, ScrollView, Alert, Linking, Platform, useColorScheme } from 'react-native';
+import { View, Text, Pressable, Switch, ScrollView, Alert, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore, ACCENT_COLORS } from '~/store/settingsStore';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
+import { useIsDark } from '~/hooks/useTheme';
 import type { ThemeMode } from '~/store/settingsStore';
 import { dbUpdateTheme } from '~/services/database';
 import {
@@ -184,7 +185,7 @@ function AccentPicker({ isDark, accent }: { isDark: boolean; accent: string }) {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const { user, signOut } = useAuthStore();
   const { notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
   const events = useEventsStore((s) => s.events);

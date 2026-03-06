@@ -1,4 +1,4 @@
-import { View, Text, Pressable, useColorScheme, Platform } from 'react-native';
+import { View, Text, Pressable, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import PolaroidSwiper from '~/components/PolaroidSwiper';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
+import { useIsDark } from '~/hooks/useTheme';
 import type { Event } from '~/types/event';
 
 function getGreeting(): string {
@@ -18,7 +19,7 @@ function getGreeting(): string {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const events = useEventsStore((s) => s.events);
   const checkAndPromoteExpiredEvents = useEventsStore((s) => s.checkAndPromoteExpiredEvents);
   const user = useAuthStore((s) => s.user);

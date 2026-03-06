@@ -1,10 +1,11 @@
-import { View, Text, FlatList, Pressable, Image, useColorScheme, Dimensions } from 'react-native';
+import { View, Text, FlatList, Pressable, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useEventsStore } from '~/store/eventsStore';
 import { formatShortDate } from '~/utils/date';
+import { useIsDark } from '~/hooks/useTheme';
 import type { Event } from '~/types/event';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -14,7 +15,7 @@ const CARD_W = (SCREEN_W - H_PAD * 2 - GAP) / 2;
 const IMAGE_H = CARD_W * 0.88;
 
 function MemoryCard({ event, index, onPress }: { event: Event; index: number; onPress: () => void }) {
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const cardBg = isDark ? '#242424' : '#FFFFFF';
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
 
@@ -84,7 +85,7 @@ function MemoryCard({ event, index, onPress }: { event: Event; index: number; on
 
 export default function MemoriesScreen() {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const memories = useEventsStore((s) => s.memories);
 
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';

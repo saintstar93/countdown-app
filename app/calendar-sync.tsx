@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Pressable, useColorScheme, Alert, Platform } from 'react-native';
+import { View, Text, FlatList, Pressable, Alert, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
+import { useIsDark } from '~/hooks/useTheme';
 
 type CalendarEvent = {
   id: string;
@@ -40,7 +41,7 @@ function groupByMonth(events: CalendarEvent[]): MonthGroup[] {
 }
 
 export default function CalendarSyncScreen() {
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const accent = useAccentColor();
   const user = useAuthStore((s) => s.user);
   const addEvent = useEventsStore((s) => s.addEvent);

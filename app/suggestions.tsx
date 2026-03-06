@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, Alert, ScrollView, useColorScheme, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, Alert, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
+import { useIsDark } from '~/hooks/useTheme';
 import { dbCreateSuggestion } from '~/services/database';
 
 export default function SuggestionsScreen() {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const user = useAuthStore((s) => s.user);
   const [text, setText] = useState('');
   const [sent, setSent] = useState(false);

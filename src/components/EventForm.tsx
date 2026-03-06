@@ -13,7 +13,6 @@ import {
   Pressable,
   Image,
   Platform,
-  useColorScheme,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -25,6 +24,7 @@ import { useUiStore } from '~/store/uiStore';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
+import { useIsDark } from '~/hooks/useTheme';
 import { COUNTDOWN_FORMATS } from '~/constants/countdown';
 import { POLAROID_FONTS } from '~/constants/fonts';
 import { getCountdownValue, formatCountdown } from '~/utils/countdown';

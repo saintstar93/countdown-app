@@ -1,9 +1,19 @@
 import { useColorScheme } from 'react-native';
 import { COLORS } from '~/constants/colors';
+import { useSettingsStore } from '~/store/settingsStore';
+
+/** Returns true if the effective color scheme is dark, respecting the user's themeMode setting. */
+export function useIsDark(): boolean {
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const systemScheme = useColorScheme();
+
+  if (themeMode === 'dark') return true;
+  if (themeMode === 'light') return false;
+  return systemScheme === 'dark';
+}
 
 export function useTheme() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = useIsDark();
 
   return {
     isDark,

@@ -1,14 +1,15 @@
 import { useRef, useState, useCallback } from 'react';
-import { Alert, Text, Pressable, ActivityIndicator, useColorScheme } from 'react-native';
+import { Alert, Text, Pressable, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
+import { useIsDark } from '~/hooks/useTheme';
 
 export default function CreateEventScreen() {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const addEvent = useEventsStore((s) => s.addEvent);
   const formRef = useRef<EventFormHandle>(null);
   const [isFormValid, setIsFormValid] = useState(false);

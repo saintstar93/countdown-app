@@ -5,13 +5,14 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { Platform, View, useColorScheme, Appearance } from 'react-native';
+import { Platform, View } from 'react-native';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { supabase } from '~/services/supabase';
 import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
+import { useIsDark } from '~/hooks/useTheme';
 import { useEventsStore } from '~/store/eventsStore';
 import { requestNotificationPermissions } from '~/services/notifications';
 import WebBanner from '~/components/WebBanner';
@@ -58,19 +59,12 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const isDark = useIsDark();
   const { isAuthenticated, user, setUser } = useAuthStore();
-  const themeMode = useSettingsStore((s) => s.themeMode);
   const loadProfile = useSettingsStore((s) => s.loadProfile);
   const loadFromSupabase = useEventsStore((s) => s.loadFromSupabase);
   const segments = useSegments();
   const router = useRouter();
-
-  useEffect(() => {
-    if (Platform.OS !== 'web') {
-      Appearance.setColorScheme(themeMode === 'system' ? null : themeMode);
-    }
-  }, [themeMode]);
 
   // On login: load events, tags and profile from Supabase
   useEffect(() => {
@@ -116,7 +110,7 @@ function RootLayoutNav() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
         <View style={{ flex: 1 }}>
           <Stack screenOptions={{ headerBackTitle: 'Indietro' }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

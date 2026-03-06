@@ -7,7 +7,6 @@ import {
   Image,
   Pressable,
   ActivityIndicator,
-  useColorScheme,
   Platform,
   KeyboardAvoidingView,
   Dimensions,
@@ -15,6 +14,7 @@ import {
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useImageSearch } from '~/hooks/useImageSearch';
+import { useIsDark } from '~/hooks/useTheme';
 import { useUiStore } from '~/store/uiStore';
 import type { ImageSearchResult } from '~/types/api';
 
@@ -23,7 +23,7 @@ const THUMB_SIZE = (Dimensions.get('window').width - 3) / 2;
 export default function ImageSearchScreen() {
   const router = useRouter();
   const { query: initialQuery } = useLocalSearchParams<{ query?: string }>();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const [searchText, setSearchText] = useState(initialQuery ?? '');
   const { results, isLoading, error, search, loadMore } = useImageSearch();
   const setPendingImage = useUiStore((s) => s.setPendingImage);

@@ -1,15 +1,16 @@
 import { useRef, useState, useCallback } from 'react';
-import { Alert, Text, Pressable, View, ActivityIndicator, useColorScheme } from 'react-native';
+import { Alert, Text, Pressable, View, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
+import { useIsDark } from '~/hooks/useTheme';
 
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const events = useEventsStore((s) => s.events);
   const updateEvent = useEventsStore((s) => s.updateEvent);
   const removeEvent = useEventsStore((s) => s.removeEvent);
