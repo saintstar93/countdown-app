@@ -41,6 +41,7 @@ export default function EventDetailScreen() {
   const isDark = useColorScheme() === 'dark';
   const events = useEventsStore((s) => s.events);
   const memories = useEventsStore((s) => s.memories);
+  const removeEvent = useEventsStore((s) => s.removeEvent);
   const event = [...events, ...memories].find((e) => e.id === id);
 
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
@@ -123,7 +124,27 @@ export default function EventDetailScreen() {
             >
               <Ionicons name="create-outline" size={22} color={isDark ? '#F5F5F5' : '#2D2D2D'} />
             </Pressable>
-          ) : undefined,
+          ) : () => (
+            <Pressable
+              onPress={() => {
+                Alert.alert('Elimina ricordo', 'Vuoi eliminare questo ricordo? L\'azione non è reversibile.', [
+                  { text: 'Annulla', style: 'cancel' },
+                  {
+                    text: 'Elimina',
+                    style: 'destructive',
+                    onPress: async () => {
+                      await removeEvent(event.id);
+                      router.back();
+                    },
+                  },
+                ]);
+              }}
+              hitSlop={8}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, marginRight: 4 })}
+            >
+              <Ionicons name="trash-outline" size={21} color="#EF4444" />
+            </Pressable>
+          ),
         }}
       />
 

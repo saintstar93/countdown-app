@@ -118,7 +118,7 @@ function RootLayoutNav() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <View style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerBackTitle: '' }}>
+          <Stack screenOptions={{ headerBackTitle: 'Indietro' }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="event/create" options={{ presentation: 'modal', title: 'Nuovo evento' }} />
