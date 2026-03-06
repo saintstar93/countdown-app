@@ -22,7 +22,9 @@ export const unstable_settings = {
   initialRouteName: '(auth)',
 };
 
-SplashScreen.preventAutoHideAsync();
+if (Platform.OS !== 'web') {
+  SplashScreen.preventAutoHideAsync();
+}
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -44,11 +46,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded && isInitialized) {
-      SplashScreen.hideAsync();
+      if (Platform.OS !== 'web') SplashScreen.hideAsync();
     }
   }, [fontsLoaded, isInitialized]);
 
-  if (!fontsLoaded || !isInitialized) {
+  if (!fontsLoaded || (!isInitialized && Platform.OS !== 'web')) {
     return null;
   }
 
