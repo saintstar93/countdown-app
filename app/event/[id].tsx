@@ -187,6 +187,38 @@ export default function EventDetailScreen() {
               <Ionicons name="calendar-outline" size={64} color="#9B9B9B" />
             </View>
           )}
+
+          {/* ── Prev / Next arrows (active events only) ── */}
+          {!isMemory && currentIndex > 0 && (
+            <Pressable
+              onPress={() => navigateTo(events[currentIndex - 1].id)}
+              hitSlop={10}
+              style={({ pressed }) => ({
+                position: 'absolute', left: 14, top: '50%', marginTop: -20,
+                width: 40, height: 40, borderRadius: 20,
+                backgroundColor: 'rgba(0,0,0,0.35)',
+                alignItems: 'center', justifyContent: 'center',
+                opacity: pressed ? 0.6 : 1,
+              })}
+            >
+              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            </Pressable>
+          )}
+          {!isMemory && currentIndex < events.length - 1 && (
+            <Pressable
+              onPress={() => navigateTo(events[currentIndex + 1].id)}
+              hitSlop={10}
+              style={({ pressed }) => ({
+                position: 'absolute', right: 14, top: '50%', marginTop: -20,
+                width: 40, height: 40, borderRadius: 20,
+                backgroundColor: 'rgba(0,0,0,0.35)',
+                alignItems: 'center', justifyContent: 'center',
+                opacity: pressed ? 0.6 : 1,
+              })}
+            >
+              <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
+            </Pressable>
+          )}
         </View>
 
         {/* ── Dot indicator (only for active events with siblings) ── */}
