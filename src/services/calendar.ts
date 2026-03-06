@@ -1,42 +1,9 @@
 import { Platform } from 'react-native';
-import * as CalendarAPI from 'expo-calendar';
-import * as FileSystem from 'expo-file-system/legacy';
-import * as Sharing from 'expo-sharing';
 import type { Event } from '~/types/event';
 import type { ApiResponse } from '~/types/api';
 import { formatCountdown, getCountdownValue } from '~/utils/countdown';
 
-// ─── iOS: add directly via expo-calendar ─────────────────────────────────────
-
-async function addToCalendarIOS(event: Event): Promise<ApiResponse<null>> {
-  const { status } = await CalendarAPI.requestCalendarPermissionsAsync();
-  if (status !== 'granted') {
-    return { data: null, error: 'Permesso calendario negato' };
-  }
-
-  const calendars = await CalendarAPI.getCalendarsAsync(CalendarAPI.EntityTypes.EVENT);
-  const writable = calendars.find((c) => c.allowsModifications) ?? calendars[0];
-  if (!writable) {
-    return { data: null, error: 'Nessun calendario disponibile' };
-  }
-
-  const countdownValue = getCountdownValue(event.date);
-  const countdown = formatCountdown(countdownValue, event.countdownFormat ?? 'days');
-  const eventDate = new Date(event.date);
-
-  await CalendarAPI.createEventAsync(writable.id, {
-    title: event.title,
-    startDate: eventDate,
-    endDate: eventDate,
-    allDay: true,
-    notes: `Countdown: ${countdown}`,
-    location: event.location,
-  });
-
-  return { data: null, error: null };
-}
-
-// ─── Android: share .ics file ─────────────────────────────────────────────────
+// ─── Shared ICS builder ───────────────────────────────────────────────────────
 
 function toICSDate(date: Date): string {
   const y = date.getUTCFullYear();
@@ -46,7 +13,7 @@ function toICSDate(date: Date): string {
 }
 
 function escapeICS(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  return value.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
 }
 
 function buildICS(event: Event): string {
@@ -76,7 +43,61 @@ function buildICS(event: Event): string {
   ].join('\r\n');
 }
 
+// ─── Web: download .ics via browser ──────────────────────────────────────────
+
+function downloadICSWeb(event: Event): ApiResponse<null> {
+  try {
+    const ics = buildICS(event);
+    const blob = new Blob([ics], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+    return { data: null, error: null };
+  } catch {
+    return { data: null, error: 'Download non riuscito' };
+  }
+}
+
+// ─── iOS: add directly via expo-calendar ─────────────────────────────────────
+
+async function addToCalendarIOS(event: Event): Promise<ApiResponse<null>> {
+  const CalendarAPI = await import('expo-calendar');
+  const { status } = await CalendarAPI.requestCalendarPermissionsAsync();
+  if (status !== 'granted') {
+    return { data: null, error: 'Permesso calendario negato' };
+  }
+
+  const calendars = await CalendarAPI.getCalendarsAsync(CalendarAPI.EntityTypes.EVENT);
+  const writable = calendars.find((c) => c.allowsModifications) ?? calendars[0];
+  if (!writable) {
+    return { data: null, error: 'Nessun calendario disponibile' };
+  }
+
+  const countdownValue = getCountdownValue(event.date);
+  const countdown = formatCountdown(countdownValue, event.countdownFormat ?? 'days');
+  const eventDate = new Date(event.date);
+
+  await CalendarAPI.createEventAsync(writable.id, {
+    title: event.title,
+    startDate: eventDate,
+    endDate: eventDate,
+    allDay: true,
+    notes: `Countdown: ${countdown}`,
+    location: event.location,
+  });
+
+  return { data: null, error: null };
+}
+
+// ─── Android: share .ics file ─────────────────────────────────────────────────
+
 async function shareICSAndroid(event: Event): Promise<ApiResponse<null>> {
+  const Sharing = await import('expo-sharing');
+  const FileSystem = await import('expo-file-system/legacy');
+
   const isAvailable = await Sharing.isAvailableAsync();
   if (!isAvailable) {
     return { data: null, error: 'Condivisione non disponibile su questo dispositivo' };
@@ -101,6 +122,9 @@ async function shareICSAndroid(event: Event): Promise<ApiResponse<null>> {
 
 export async function exportEventToCalendar(event: Event): Promise<ApiResponse<null>> {
   try {
+    if (Platform.OS === 'web') {
+      return downloadICSWeb(event);
+    }
     if (Platform.OS === 'ios') {
       return await addToCalendarIOS(event);
     }

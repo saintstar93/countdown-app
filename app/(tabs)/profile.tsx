@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Switch, ScrollView, Alert, Linking, useColorScheme } from 'react-native';
+import { View, Text, Pressable, Switch, ScrollView, Alert, Linking, Platform, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -279,23 +279,25 @@ export default function ProfileScreen() {
         {/* Accent color picker */}
         <AccentPicker isDark={isDark} accent={accent} />
 
-        {/* Notifications */}
-        <Section title="Notifiche" isDark={isDark}>
-          <Row
-            icon="notifications-outline"
-            label="Notifiche eventi"
-            isDark={isDark}
-            isLast
-            right={
-              <Switch
-                value={notificationsEnabled}
-                onValueChange={handleNotificationsToggle}
-                trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: accent }}
-                thumbColor="#FFFFFF"
-              />
-            }
-          />
-        </Section>
+        {/* Notifications — mobile only */}
+        {Platform.OS !== 'web' && (
+          <Section title="Notifiche" isDark={isDark}>
+            <Row
+              icon="notifications-outline"
+              label="Notifiche eventi"
+              isDark={isDark}
+              isLast
+              right={
+                <Switch
+                  value={notificationsEnabled}
+                  onValueChange={handleNotificationsToggle}
+                  trackColor={{ false: isDark ? '#3A3A3A' : '#E5E7EB', true: accent }}
+                  thumbColor="#FFFFFF"
+                />
+              }
+            />
+          </Section>
+        )}
 
         {/* Support */}
         <Section title="Supporto" isDark={isDark}>

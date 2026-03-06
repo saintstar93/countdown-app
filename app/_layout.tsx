@@ -5,7 +5,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme, Appearance } from 'react-native';
+import { Platform, View, useColorScheme, Appearance } from 'react-native';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -14,6 +14,7 @@ import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
 import { useEventsStore } from '~/store/eventsStore';
 import { requestNotificationPermissions } from '~/services/notifications';
+import WebBanner from '~/components/WebBanner';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -36,7 +37,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     initialize();
-    requestNotificationPermissions();
+    if (Platform.OS !== 'web') {
+      requestNotificationPermissions();
+    }
   }, []);
 
   useEffect(() => {
@@ -110,15 +113,18 @@ function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerBackTitle: '' }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="event/create" options={{ presentation: 'modal', title: 'Nuovo evento' }} />
-          <Stack.Screen name="event/[id]" options={{ title: 'Dettaglio evento' }} />
-          <Stack.Screen name="event/edit/[id]" options={{ title: 'Modifica evento' }} />
-          <Stack.Screen name="suggestions" options={{ title: 'Suggerimenti' }} />
-          <Stack.Screen name="image-search" options={{ presentation: 'modal', title: 'Cerca immagine' }} />
-        </Stack>
+        <View style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerBackTitle: '' }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="event/create" options={{ presentation: 'modal', title: 'Nuovo evento' }} />
+            <Stack.Screen name="event/[id]" options={{ title: 'Dettaglio evento' }} />
+            <Stack.Screen name="event/edit/[id]" options={{ title: 'Modifica evento' }} />
+            <Stack.Screen name="suggestions" options={{ title: 'Suggerimenti' }} />
+            <Stack.Screen name="image-search" options={{ presentation: 'modal', title: 'Cerca immagine' }} />
+          </Stack>
+          <WebBanner />
+        </View>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

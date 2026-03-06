@@ -1,17 +1,21 @@
+import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import type { Event } from '~/types/event';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 export async function requestNotificationPermissions(): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
   try {
     const { status: existing } = await Notifications.getPermissionsAsync();
     if (existing === 'granted') return true;
@@ -23,6 +27,7 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 }
 
 export async function getNotificationPermissionStatus(): Promise<'granted' | 'denied' | 'undetermined'> {
+  if (Platform.OS === 'web') return 'denied';
   try {
     const { status } = await Notifications.getPermissionsAsync();
     return status;
@@ -33,6 +38,7 @@ export async function getNotificationPermissionStatus(): Promise<'granted' | 'de
 
 /** Schedule 3 reminders: 7 days before, 1 day before, on the day. Returns list of IDs scheduled. */
 export async function scheduleEventNotifications(event: Event): Promise<string[]> {
+  if (Platform.OS === 'web') return [];
   const ids: string[] = [];
   const targetDate = new Date(event.date);
   const now = new Date();
@@ -85,6 +91,7 @@ export async function scheduleEventNotifications(event: Event): Promise<string[]
 
 /** Cancel all notifications associated with an event. */
 export async function cancelEventNotifications(notificationIds: string[]): Promise<void> {
+  if (Platform.OS === 'web') return;
   await Promise.all(
     notificationIds.map((id) =>
       Notifications.cancelScheduledNotificationAsync(id).catch(() => {}),
@@ -94,6 +101,7 @@ export async function cancelEventNotifications(notificationIds: string[]): Promi
 
 /** Cancel all scheduled notifications (used when toggling notifications off). */
 export async function cancelAllNotifications(): Promise<void> {
+  if (Platform.OS === 'web') return;
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
   } catch {
