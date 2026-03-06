@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Termini di Servizio – Countdown App</title>
+  <style>
+    :root {
+      --bg: #f9f7f4;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --accent: #4f46e5;
+      --border: #e5e7eb;
+      --radius: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111111;
+        --surface: #1e1e1e;
+        --text: #f5f5f5;
+        --muted: #9ca3af;
+        --border: #2d2d2d;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+      text-align: center;
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; }
+    header p { color: var(--muted); font-size: 0.875rem; margin-top: 4px; }
+
+    .lang-switcher {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 16px 0;
+    }
+    .lang-btn {
+      padding: 6px 18px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .lang-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+
+    .content { display: none; }
+    .content.visible { display: block; }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 36px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    h2:first-child { margin-top: 0; }
+    p { margin-bottom: 12px; }
+    ul { margin: 8px 0 12px 20px; }
+    li { margin-bottom: 6px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .info-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.9rem;
+    }
+    .info-box strong { display: block; margin-bottom: 4px; }
+
+    .updated {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📋 Termini di Servizio</h1>
+  <p>Countdown App</p>
+</header>
+
+<div class="lang-switcher">
+  <button class="lang-btn active" onclick="setLang('it')">🇮🇹 Italiano</button>
+  <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
+</div>
+
+<div class="container">
+
+  <!-- ITALIANO -->
+  <div id="lang-it" class="content visible">
+
+    <div class="info-box">
+      <strong>Fornitore del servizio</strong>
+      Daniele Piani – P.IVA 15488591007<br>
+      📧 <a href="mailto:danielepiani1993@gmail.com">danielepiani1993@gmail.com</a>
+    </div>
+
+    <h2>1. Accettazione dei Termini</h2>
+    <p>Utilizzando Countdown App ("l'App") accetti i presenti Termini di Servizio. Se non accetti questi termini, ti preghiamo di non utilizzare l'App.</p>
+
+    <h2>2. Descrizione del Servizio</h2>
+    <p>Countdown App è un'applicazione mobile che consente agli utenti di creare e gestire un countdown personale verso eventi importanti della propria vita. Gli eventi passati vengono automaticamente archiviati come "Ricordi".</p>
+
+    <h2>3. Requisiti di Accesso</h2>
+    <p>Per utilizzare l'App è necessario:</p>
+    <ul>
+      <li>Avere almeno 16 anni di età.</li>
+      <li>Creare un account con un indirizzo email valido oppure accedere tramite Google o Apple.</li>
+      <li>Disporre di una connessione internet per la sincronizzazione dei dati.</li>
+    </ul>
+
+    <h2>4. Utilizzo Consentito</h2>
+    <p>L'App è destinata esclusivamente all'uso personale e non commerciale. È vietato:</p>
+    <ul>
+      <li>Utilizzare l'App per scopi illegali o non autorizzati.</li>
+      <li>Tentare di accedere, modificare o danneggiare i sistemi o i dati di altri utenti.</li>
+      <li>Caricare contenuti illegali, offensivi o che violino diritti di terzi.</li>
+      <li>Effettuare reverse engineering, decompilare o tentare di estrarre il codice sorgente dell'App.</li>
+    </ul>
+
+    <h2>5. Contenuti dell'Utente</h2>
+    <p>Sei l'unico responsabile dei contenuti che carichi sull'App (testi, immagini, eventi). Caricando contenuti dichiari di avere i diritti necessari per farlo.</p>
+    <p>Non rivendichiamo alcun diritto di proprietà sui tuoi contenuti. I tuoi dati ti appartengono.</p>
+
+    <h2>6. Immagini di Terze Parti</h2>
+    <p>Le immagini stock disponibili tramite la ricerca integrata sono fornite da Unsplash e Pexels, soggette alle rispettive licenze. L'utilizzo di tali immagini è consentito nei limiti previsti dalle licenze Unsplash License e Pexels License per uso personale e non commerciale.</p>
+
+    <h2>7. Limitazioni del Servizio</h2>
+    <p>L'App prevede i seguenti limiti:</p>
+    <ul>
+      <li>Massimo 10 eventi attivi (countdown futuri) per account.</li>
+      <li>Massimo 10 ricordi (eventi passati) per account. Il ricordo più vecchio viene rimosso automaticamente quando si raggiunge il limite.</li>
+    </ul>
+
+    <h2>8. Disponibilità del Servizio</h2>
+    <p>Ci impegniamo a garantire la disponibilità dell'App, ma non possiamo garantire un servizio ininterrotto. Ci riserviamo il diritto di sospendere, modificare o interrompere il servizio in qualsiasi momento, con o senza preavviso, per manutenzione o altri motivi.</p>
+
+    <h2>9. Disclaimer di Garanzia</h2>
+    <p>L'App è fornita "così com'è" e "come disponibile", senza garanzie di alcun tipo, esplicite o implicite. Non garantiamo che l'App sia priva di errori, sicura o sempre disponibile.</p>
+
+    <h2>10. Limitazione di Responsabilità</h2>
+    <p>Nella misura massima consentita dalla legge, Daniele Piani non sarà responsabile per danni indiretti, incidentali, speciali o consequenziali derivanti dall'utilizzo o dall'impossibilità di utilizzo dell'App.</p>
+
+    <h2>11. Modifiche ai Termini</h2>
+    <p>Ci riserviamo il diritto di modificare questi Termini in qualsiasi momento. Le modifiche sostanziali saranno comunicate tramite notifica in-app o email. Il proseguimento dell'utilizzo dell'App dopo la notifica costituisce accettazione dei nuovi termini.</p>
+
+    <h2>12. Legge Applicabile</h2>
+    <p>I presenti Termini sono regolati dalla legge italiana. Per qualsiasi controversia, sarà competente il foro di Roma, salvo diversa previsione di legge a tutela del consumatore.</p>
+
+    <h2>13. Contatti</h2>
+    <p>Per qualsiasi domanda sui presenti Termini: <a href="mailto:danielepiani1993@gmail.com">danielepiani1993@gmail.com</a></p>
+
+    <div class="updated">Ultimo aggiornamento: Marzo 2025</div>
+  </div>
+
+  <!-- ENGLISH -->
+  <div id="lang-en" class="content">
+
+    <div class="info-box">
+      <strong>Service Provider</strong>
+      Daniele Piani – VAT 15488591007 (Italy)<br>
+      📧 <a href="mailto:danielepiani1993@gmail.com">danielepiani1993@gmail.com</a>
+    </div>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>By using Countdown App ("the App") you agree to these Terms of Service. If you do not accept these terms, please do not use the App.</p>
+
+    <h2>2. Description of Service</h2>
+    <p>Countdown App is a mobile application that allows users to create and manage personal countdowns to important life events. Past events are automatically archived as "Memories".</p>
+
+    <h2>3. Access Requirements</h2>
+    <p>To use the App you must:</p>
+    <ul>
+      <li>Be at least 16 years of age.</li>
+      <li>Create an account with a valid email address or sign in via Google or Apple.</li>
+      <li>Have an internet connection for data synchronization.</li>
+    </ul>
+
+    <h2>4. Permitted Use</h2>
+    <p>The App is intended for personal, non-commercial use only. You may not:</p>
+    <ul>
+      <li>Use the App for illegal or unauthorized purposes.</li>
+      <li>Attempt to access, modify, or damage other users' systems or data.</li>
+      <li>Upload illegal, offensive, or third-party rights-infringing content.</li>
+      <li>Reverse engineer, decompile, or attempt to extract the App's source code.</li>
+    </ul>
+
+    <h2>5. User Content</h2>
+    <p>You are solely responsible for the content you upload to the App (text, images, events). By uploading content you declare that you have the necessary rights to do so.</p>
+    <p>We claim no ownership over your content. Your data belongs to you.</p>
+
+    <h2>6. Third-Party Images</h2>
+    <p>Stock images available through the integrated search are provided by Unsplash and Pexels, subject to their respective licenses. Use of such images is permitted within the limits of the Unsplash License and Pexels License for personal, non-commercial use.</p>
+
+    <h2>7. Service Limitations</h2>
+    <p>The App has the following limits:</p>
+    <ul>
+      <li>Maximum 10 active events (future countdowns) per account.</li>
+      <li>Maximum 10 memories (past events) per account. The oldest memory is automatically removed when the limit is reached.</li>
+    </ul>
+
+    <h2>8. Service Availability</h2>
+    <p>We strive to ensure the App's availability, but cannot guarantee uninterrupted service. We reserve the right to suspend, modify, or discontinue the service at any time, with or without notice, for maintenance or other reasons.</p>
+
+    <h2>9. Disclaimer of Warranties</h2>
+    <p>The App is provided "as is" and "as available", without warranties of any kind, express or implied. We do not warrant that the App will be error-free, secure, or always available.</p>
+
+    <h2>10. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by law, Daniele Piani shall not be liable for any indirect, incidental, special, or consequential damages arising from the use or inability to use the App.</p>
+
+    <h2>11. Changes to Terms</h2>
+    <p>We reserve the right to modify these Terms at any time. Material changes will be communicated via in-app notification or email. Continued use of the App after notification constitutes acceptance of the new terms.</p>
+
+    <h2>12. Governing Law</h2>
+    <p>These Terms are governed by Italian law. Any disputes shall be subject to the jurisdiction of the courts of Rome, unless otherwise required by applicable consumer protection law.</p>
+
+    <h2>13. Contact</h2>
+    <p>For any questions about these Terms: <a href="mailto:danielepiani1993@gmail.com">danielepiani1993@gmail.com</a></p>
+
+    <div class="updated">Last updated: March 2025</div>
+  </div>
+
+</div>
+
+<footer>
+  <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
+  Countdown App &nbsp;·&nbsp; Daniele Piani
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.querySelectorAll('.content').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('lang-' + lang).classList.add('visible');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
