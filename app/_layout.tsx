@@ -67,7 +67,9 @@ function RootLayoutNav() {
   const router = useRouter();
 
   useEffect(() => {
-    Appearance.setColorScheme(themeMode === 'system' ? null : themeMode);
+    if (Platform.OS !== 'web') {
+      Appearance.setColorScheme(themeMode === 'system' ? null : themeMode);
+    }
   }, [themeMode]);
 
   // On login: load events, tags and profile from Supabase
