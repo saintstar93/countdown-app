@@ -125,6 +125,7 @@ function RootLayoutNav() {
             <Stack.Screen name="event/[id]" options={{ title: 'Dettaglio evento' }} />
             <Stack.Screen name="event/edit/[id]" options={{ title: 'Modifica evento' }} />
             <Stack.Screen name="suggestions" options={{ title: 'Suggerimenti' }} />
+            <Stack.Screen name="calendar-sync" options={{ title: 'Sync Calendario' }} />
             <Stack.Screen name="image-search" options={{ presentation: 'modal', title: 'Cerca immagine' }} />
           </Stack>
           <WebBanner />

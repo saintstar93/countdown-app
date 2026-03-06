@@ -1,9 +1,11 @@
-import { View, Text, Image, ScrollView, Pressable, Alert, useColorScheme, Dimensions, Animated } from 'react-native';
+import { View, Text, Image, ScrollView, Pressable, Alert, useColorScheme, Dimensions, Animated, Platform } from 'react-native';
 import { useRef, useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { useEventsStore } from '~/store/eventsStore';
 import { useCountdown } from '~/hooks/useCountdown';
 import { exportEventToCalendar } from '~/services/calendar';
@@ -49,6 +51,25 @@ export default function EventDetailScreen() {
   const [toastVisible, setToastVisible] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
+  // Swipe navigation (active events only)
+  const currentIndex = events.findIndex((e) => e.id === id);
+
+  function navigateTo(nextId: string) {
+    router.replace(`/event/${nextId}`);
+  }
+
+  const swipeGesture = Gesture.Pan()
+    .failOffsetY([-15, 15])
+    .activeOffsetX([-25, 25])
+    .onEnd((e) => {
+      'worklet';
+      if (e.translationX < -60 && currentIndex >= 0 && currentIndex < events.length - 1) {
+        runOnJS(navigateTo)(events[currentIndex + 1].id);
+      } else if (e.translationX > 60 && currentIndex > 0) {
+        runOnJS(navigateTo)(events[currentIndex - 1].id);
+      }
+    });
+
   function showToast() {
     setToastVisible(true);
     Animated.sequence([
@@ -81,7 +102,7 @@ export default function EventDetailScreen() {
 
   const isMemory = memories.some((e) => e.id === id);
 
-  return (
+  const content = (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['bottom']}>
       {toastVisible && (
         <Animated.View style={{ position: 'absolute', bottom: 48, alignSelf: 'center', zIndex: 99, opacity: toastOpacity, backgroundColor: '#2D2D2D', paddingHorizontal: 22, paddingVertical: 13, borderRadius: 50 }}>
@@ -146,6 +167,23 @@ export default function EventDetailScreen() {
             </View>
           )}
         </View>
+
+        {/* ── Dot indicator (only for active events with siblings) ── */}
+        {!isMemory && events.length > 1 && (
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, paddingTop: 14 }}>
+            {events.map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  width: i === currentIndex ? 8 : 5,
+                  height: i === currentIndex ? 8 : 5,
+                  borderRadius: 4,
+                  backgroundColor: i === currentIndex ? ACCENT : (isDark ? '#444' : '#CCC'),
+                }}
+              />
+            ))}
+          </View>
+        )}
 
         {/* ── Countdown / Memory badge ── */}
         {!isMemory && <CountdownRow event={event} />}
@@ -243,4 +281,9 @@ export default function EventDetailScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+
+  // On web or for memories, no swipe gesture needed
+  if (Platform.OS === 'web' || isMemory || events.length <= 1) return content;
+
+  return <GestureDetector gesture={swipeGesture}>{content}</GestureDetector>;
 }

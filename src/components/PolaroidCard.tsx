@@ -53,14 +53,14 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
           height: CARD_HEIGHT,
           // Always white — the white border IS the polaroid
           backgroundColor: '#FFFFFF',
-          borderRadius: 4,
+          borderRadius: 18,
           padding: SIDE_PADDING,
           paddingBottom: 0,
           shadowColor: '#000000',
-          shadowOffset: { width: 3, height: 12 },
-          shadowOpacity: 0.28,
-          shadowRadius: 20,
-          elevation: 16,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.16,
+          shadowRadius: 24,
+          elevation: 12,
         },
         animatedStyle,
       ]}
@@ -71,6 +71,7 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
           width: IMAGE_SIZE,
           height: IMAGE_SIZE,
           backgroundColor: '#D1D5DB',
+          borderRadius: 8,
           overflow: 'hidden',
         }}
       >

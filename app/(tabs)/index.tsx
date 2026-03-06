@@ -1,4 +1,4 @@
-import { View, Text, Pressable, useColorScheme } from 'react-native';
+import { View, Text, Pressable, useColorScheme, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -57,6 +57,24 @@ export default function HomeScreen() {
 
         {/* Action buttons */}
         <View style={{ flexDirection: 'row', gap: 10 }}>
+          {Platform.OS !== 'web' && (
+            <Pressable
+              onPress={() => router.push('/calendar-sync')}
+              hitSlop={8}
+              style={({ pressed }) => ({
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: iconBg,
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: pressed ? 0.6 : 1,
+              })}
+              accessibilityLabel="Sync Calendario"
+            >
+              <Ionicons name="calendar-outline" size={20} color={mutedColor} />
+            </Pressable>
+          )}
           <Pressable
             onPress={() => router.push('/(tabs)/profile')}
             hitSlop={8}

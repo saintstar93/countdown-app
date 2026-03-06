@@ -197,7 +197,9 @@ export const useEventsStore = create<EventsStore>()(
 
         set((state) => {
           const remaining = state.events.filter((e) => !isPastEvent(e.date));
-          const newMemories = [...expired, ...state.memories]
+          const existingIds = new Set(state.memories.map((m) => m.id));
+          const newExpired = expired.filter((e) => !existingIds.has(e.id));
+          const newMemories = [...newExpired, ...state.memories]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, MAX_MEMORIES);
           const cleanedIds = { ...state.notificationIds };
