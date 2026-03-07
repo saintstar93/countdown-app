@@ -176,14 +176,14 @@ export default function RegisterScreen() {
             Continuando accetti i{' '}
             <Text
               className="underline"
-              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html')}
+              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => {})}
             >
               Termini di Servizio
             </Text>
             {' '}e la{' '}
             <Text
               className="underline"
-              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html')}
+              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => {})}
             >
               Privacy Policy
             </Text>
