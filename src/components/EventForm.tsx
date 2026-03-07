@@ -92,7 +92,7 @@ function SectionLabel({ children, muted }: { children: string; muted: string }) 
 
 const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   ({ onValidityChange, initialValues, allowPastDate }, ref) => {
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useIsDark();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const userTags = useEventsStore((s) => s.userTags);
@@ -144,7 +144,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   const accent = useSettingsStore((s) => s.accentColor);
   const accentText = '#FFFFFF';
 
-  useEffect(() => { onValidityChange(isValid); }, [isValid]);
+  useEffect(() => { onValidityChange(isValid); }, [isValid, onValidityChange]);
 
   // Pick up image selected in image-search modal
   useFocusEffect(useCallback(() => {
@@ -565,7 +565,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                 <Pressable
                   key={opt.value}
                   onPress={() => setImageObjectFit(opt.value)}
-                  style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: active ? '#E8754A' : (isDark ? '#2A2A2A' : '#F3F4F6') }}
+                  style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: active ? accent : (isDark ? '#2A2A2A' : '#F3F4F6') }}
                 >
                   <View style={{ width: 44, height: 44, borderRadius: 6, overflow: 'hidden', backgroundColor: isDark ? '#111' : '#E5E7EB' }}>
                     {opt.value === 'blur' ? (

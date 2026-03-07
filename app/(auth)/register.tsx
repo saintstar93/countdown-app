@@ -5,6 +5,7 @@ import {
   ScrollView,
   Platform,
   Pressable,
+  Linking,
 } from 'react-native';
 import { useState } from 'react';
 import { Link } from 'expo-router';
@@ -170,6 +171,23 @@ export default function RegisterScreen() {
             isLoading={isLoading}
             disabled={isLoading}
           />
+
+          <Text className="text-xs text-gray-400 dark:text-gray-500 text-center mt-3 leading-5">
+            Continuando accetti i{' '}
+            <Text
+              className="underline"
+              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html')}
+            >
+              Termini di Servizio
+            </Text>
+            {' '}e la{' '}
+            <Text
+              className="underline"
+              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html')}
+            >
+              Privacy Policy
+            </Text>
+          </Text>
         </View>
 
         {/* Login Link */}

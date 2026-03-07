@@ -8,7 +8,7 @@ import { useEventsStore } from '~/store/eventsStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
 import type { ThemeMode } from '~/store/settingsStore';
-import { dbUpdateTheme } from '~/services/database';
+import { dbUpdateTheme, dbDeleteAccountData } from '~/services/database';
 import {
   cancelAllNotifications,
   scheduleEventNotifications,
@@ -234,6 +234,42 @@ export default function ProfileScreen() {
     ]);
   }
 
+  function handleDeleteAccount() {
+    Alert.alert(
+      'Elimina account',
+      'Questa azione è irreversibile. Tutti i tuoi eventi, ricordi e dati personali verranno eliminati definitivamente.',
+      [
+        { text: 'Annulla', style: 'cancel' },
+        {
+          text: 'Elimina definitivamente',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Sei sicuro?',
+              'Confermando, tutti i tuoi dati verranno cancellati e non potranno essere recuperati.',
+              [
+                { text: 'Annulla', style: 'cancel' },
+                {
+                  text: 'Sì, elimina tutto',
+                  style: 'destructive',
+                  onPress: async () => {
+                    if (!user) return;
+                    const { error } = await dbDeleteAccountData(user.id);
+                    if (error) {
+                      Alert.alert('Errore', 'Impossibile eliminare i dati. Riprova o contatta danielepiani1993@gmail.com');
+                      return;
+                    }
+                    await signOut();
+                  },
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 22, paddingBottom: 48 }}>
@@ -309,6 +345,18 @@ export default function ProfileScreen() {
             onPress={() => router.push('/suggestions')}
           />
           <Row
+            icon="shield-checkmark-outline"
+            label="Privacy Policy"
+            isDark={isDark}
+            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html')}
+          />
+          <Row
+            icon="document-text-outline"
+            label="Termini di Servizio"
+            isDark={isDark}
+            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html')}
+          />
+          <Row
             icon="information-circle-outline"
             label={`Versione ${APP_VERSION}`}
             isDark={isDark}
@@ -325,6 +373,14 @@ export default function ProfileScreen() {
             iconColor="#EF4444"
             danger
             onPress={handleLogout}
+          />
+          <Row
+            icon="trash-outline"
+            label="Elimina account"
+            isDark={isDark}
+            iconColor="#EF4444"
+            danger
+            onPress={handleDeleteAccount}
             isLast
           />
         </Section>

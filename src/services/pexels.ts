@@ -30,7 +30,7 @@ export async function searchPexelsPhotos(
     }));
 
     return { data, error: null };
-  } catch (err) {
+  } catch {
     return { data: null, error: 'Errore di rete' };
   }
 }

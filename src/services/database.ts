@@ -250,6 +250,34 @@ export async function dbCreateSuggestion(userId: string, content: string): Promi
   return { error: error?.message ?? null };
 }
 
+// ── Account deletion ──────────────────────────────────────────────────────────
+
+/**
+ * Deletes all data associated with a user: events, event_tags (cascade via FK),
+ * tags, and profile. The Supabase auth entry is removed server-side within 30 days.
+ */
+export async function dbDeleteAccountData(userId: string): Promise<Err> {
+  const { error: eventsErr } = await supabase
+    .from('events')
+    .delete()
+    .eq('user_id', userId);
+  if (eventsErr) return { error: eventsErr.message };
+
+  const { error: tagsErr } = await supabase
+    .from('tags')
+    .delete()
+    .eq('user_id', userId);
+  if (tagsErr) return { error: tagsErr.message };
+
+  const { error: profileErr } = await supabase
+    .from('profiles')
+    .delete()
+    .eq('id', userId);
+  if (profileErr) return { error: profileErr.message };
+
+  return { error: null };
+}
+
 // ── Storage ───────────────────────────────────────────────────────────────────
 
 export async function dbUploadImage(
@@ -264,6 +292,11 @@ export async function dbUploadImage(
 
     const response = await fetch(uri);
     const arrayBuffer = await response.arrayBuffer();
+
+    const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+    if (arrayBuffer.byteLength > MAX_SIZE_BYTES) {
+      return { url: null, error: "L'immagine supera il limite di 10 MB. Scegli un'immagine più piccola." };
+    }
 
     const { error } = await supabase.storage
       .from('event-images')

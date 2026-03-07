@@ -21,6 +21,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const isDark = useIsDark();
   const events = useEventsStore((s) => s.events);
+  const eventsError = useEventsStore((s) => s.error);
   const checkAndPromoteExpiredEvents = useEventsStore((s) => s.checkAndPromoteExpiredEvents);
   const user = useAuthStore((s) => s.user);
   const accent = useAccentColor();
@@ -110,6 +111,15 @@ export default function HomeScreen() {
           </Pressable>
         </View>
       </View>
+
+      {/* Network/Supabase error banner */}
+      {eventsError ? (
+        <View style={{ marginHorizontal: 16, marginBottom: 8, backgroundColor: isDark ? '#2D1515' : '#FEE2E2', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10 }}>
+          <Text style={{ fontSize: 13, color: '#DC2626', textAlign: 'center' }}>
+            {eventsError}
+          </Text>
+        </View>
+      ) : null}
 
       {/* Card Stack */}
       <View style={{ flex: 1 }}>
