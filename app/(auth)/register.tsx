@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '~/hooks/useAuth';
 import { validateEmail, validatePassword } from '~/utils/validation';
@@ -42,6 +43,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
@@ -165,29 +167,51 @@ export default function RegisterScreen() {
             </View>
           ) : null}
 
+          {/* Checkbox consenso — obbligatorio per GDPR e App Store */}
+          <Pressable
+            onPress={() => setTermsAccepted(v => !v)}
+            style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 16 }}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: termsAccepted }}
+          >
+            <View style={{
+              width: 22,
+              height: 22,
+              borderRadius: 6,
+              borderWidth: 2,
+              borderColor: termsAccepted ? '#E8754A' : '#D1D5DB',
+              backgroundColor: termsAccepted ? '#E8754A' : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 1,
+              flexShrink: 0,
+            }}>
+              {termsAccepted && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+            </View>
+            <Text className="text-xs text-gray-500 dark:text-gray-400 flex-1 leading-5">
+              Ho letto e accetto i{' '}
+              <Text
+                className="underline text-gray-700 dark:text-gray-300"
+                onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => {})}
+              >
+                Termini di Servizio
+              </Text>
+              {' '}e la{' '}
+              <Text
+                className="underline text-gray-700 dark:text-gray-300"
+                onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => {})}
+              >
+                Privacy Policy
+              </Text>
+            </Text>
+          </Pressable>
+
           <Button
             title="Crea Account"
             onPress={handleRegister}
             isLoading={isLoading}
-            disabled={isLoading}
+            disabled={isLoading || !termsAccepted}
           />
-
-          <Text className="text-xs text-gray-400 dark:text-gray-500 text-center mt-3 leading-5">
-            Continuando accetti i{' '}
-            <Text
-              className="underline"
-              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => {})}
-            >
-              Termini di Servizio
-            </Text>
-            {' '}e la{' '}
-            <Text
-              className="underline"
-              onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => {})}
-            >
-              Privacy Policy
-            </Text>
-          </Text>
         </View>
 
         {/* Login Link */}

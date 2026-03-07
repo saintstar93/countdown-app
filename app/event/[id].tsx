@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, Pressable, Alert, Dimensions, Animated, Platform } from 'react-native';
+import { View, Text, Image, ScrollView, Pressable, Alert, Dimensions, Animated, Platform, Linking } from 'react-native';
 import { useRef, useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -274,11 +274,19 @@ export default function EventDetailScreen() {
             </View>
           )}
 
-          {/* Unsplash attribution */}
+          {/* Unsplash attribution — clickable link required by Unsplash ToS */}
           {event.imageSource === 'unsplash' && event.imageAuthor && (
-            <Text style={{ fontSize: 11, color: '#9B9B9B' }}>
-              Foto di {event.imageAuthor} su Unsplash
-            </Text>
+            <Pressable
+              onPress={() => {
+                const url = event.imageAuthorUrl ?? 'https://unsplash.com';
+                Linking.openURL(url).catch(() => {});
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              <Text style={{ fontSize: 11, color: '#9B9B9B', textDecorationLine: 'underline' }}>
+                Foto di {event.imageAuthor} su Unsplash
+              </Text>
+            </Pressable>
           )}
 
           {/* Divider */}

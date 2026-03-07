@@ -42,6 +42,7 @@ interface EventsStore {
   checkAndPromoteExpiredEvents: () => Promise<void>;
   syncFromSupabase: (events: Event[]) => void;
   clearError: () => void;
+  reset: () => void;
 }
 
 export const useEventsStore = create<EventsStore>()(
@@ -220,6 +221,15 @@ export const useEventsStore = create<EventsStore>()(
       },
 
       clearError: () => set({ error: null }),
+
+      reset: () => set({
+        events: [],
+        memories: [],
+        userTags: [],
+        notificationIds: {},
+        isLoading: false,
+        error: null,
+      }),
     }),
     {
       name: 'events-storage',

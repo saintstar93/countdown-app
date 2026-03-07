@@ -253,27 +253,51 @@ export async function dbCreateSuggestion(userId: string, content: string): Promi
 // ── Account deletion ──────────────────────────────────────────────────────────
 
 /**
- * Deletes all data associated with a user: events, event_tags (cascade via FK),
- * tags, and profile. The Supabase auth entry is removed server-side within 30 days.
+ * Deletes all data associated with a user:
+ * 1. Storage images  (bucket event-images/{userId}/)
+ * 2. events          (event_tags cascade via FK)
+ * 3. tags
+ * 4. profile
+ * 5. auth.users entry via RPC (requires a Postgres SECURITY DEFINER function
+ *    named "delete_user" — create it once in Supabase Dashboard > SQL Editor:
+ *
+ *    CREATE OR REPLACE FUNCTION delete_user()
+ *      RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+ *      AS $$ BEGIN DELETE FROM auth.users WHERE id = auth.uid(); END; $$;
  */
 export async function dbDeleteAccountData(userId: string): Promise<Err> {
+  // 1. Delete Storage images
+  const { data: storageFiles } = await supabase.storage
+    .from('event-images')
+    .list(userId);
+  if (storageFiles && storageFiles.length > 0) {
+    const paths = storageFiles.map((f) => `${userId}/${f.name}`);
+    await supabase.storage.from('event-images').remove(paths);
+  }
+
+  // 2. Delete events (event_tags cascade via FK)
   const { error: eventsErr } = await supabase
     .from('events')
     .delete()
     .eq('user_id', userId);
   if (eventsErr) return { error: eventsErr.message };
 
+  // 3. Delete tags
   const { error: tagsErr } = await supabase
     .from('tags')
     .delete()
     .eq('user_id', userId);
   if (tagsErr) return { error: tagsErr.message };
 
+  // 4. Delete profile
   const { error: profileErr } = await supabase
     .from('profiles')
     .delete()
     .eq('id', userId);
   if (profileErr) return { error: profileErr.message };
+
+  // 5. Delete auth.users entry (see SQL comment above for required function)
+  await supabase.rpc('delete_user');
 
   return { error: null };
 }

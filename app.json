@@ -13,6 +13,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "privacyPolicyUrl": "https://saintstar93.github.io/countdown-app/privacy.html",
     "ios": {
       "supportsTablet": true
     },
@@ -32,6 +33,12 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Countdown accede alla tua galleria per aggiungere immagini agli eventi."
+        }
+      ],
       "expo-notifications",
       [
         "expo-calendar",

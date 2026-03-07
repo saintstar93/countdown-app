@@ -7,6 +7,8 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import type { User } from '~/types/auth';
 import { supabase } from '~/services/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useEventsStore } from '~/store/eventsStore';
+import { useSettingsStore } from '~/store/settingsStore';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -93,6 +95,9 @@ export const useAuthStore = create<AuthStore>()(
         try {
           await supabase.auth.signOut();
         } finally {
+          // Clear other users' data from memory and AsyncStorage
+          useEventsStore.getState().reset();
+          useSettingsStore.getState().setThemeMode('system');
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },

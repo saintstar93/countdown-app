@@ -117,6 +117,7 @@ export default function SuggestionsScreen() {
                   placeholder="Scrivi il tuo suggerimento..."
                   placeholderTextColor="#9B9B9B"
                   multiline
+                  maxLength={2000}
                   style={{
                     minHeight: 180,
                     maxHeight: 320,
