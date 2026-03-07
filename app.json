@@ -16,10 +16,10 @@
     "privacyPolicyUrl": "https://saintstar93.github.io/countdown-app/privacy.html",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.danielepiani.countdownapp"
+      "bundleIdentifier": "app.countdown.moments"
     },
     "android": {
-      "package": "com.danielepiani.countdownapp",
+      "package": "app.countdown.moments",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
