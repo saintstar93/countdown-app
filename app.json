@@ -15,16 +15,36 @@
     },
     "privacyPolicyUrl": "https://saintstar93.github.io/nearday/privacy.html",
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.nearday.app"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.nearday.app",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Nearday ha bisogno di accedere alla tua galleria per caricare foto negli eventi.",
+        "NSCameraUsageDescription": "Nearday ha bisogno della fotocamera per scattare foto per i tuoi eventi.",
+        "NSCalendarsUsageDescription": "Nearday ha bisogno di accedere al calendario per esportare i tuoi eventi.",
+        "NSUserNotificationUsageDescription": "Nearday invia notifiche per ricordarti i tuoi eventi in arrivo."
+      }
     },
     "android": {
       "package": "com.nearday.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E8754A",
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.INTERNET"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -44,7 +64,7 @@
       [
         "expo-calendar",
         {
-          "calendarPermission": "L'app accede al calendario per salvare gli eventi."
+          "calendarPermission": "Nearday ha bisogno di accedere al calendario per esportare i tuoi eventi."
         }
       ],
       "@react-native-community/datetimepicker"
