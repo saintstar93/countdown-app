@@ -20,7 +20,7 @@ export default function ForgotPasswordScreen() {
     if (err) { setEmailError(err); return; }
     setIsLoading(true);
     try {
-      // Linking.createURL works in Expo Go (exp://) and in standalone (countdownapp://)
+      // Linking.createURL works in Expo Go (exp://) and in standalone (nearday://)
       const redirectTo = Linking.createURL('/reset-password');
       const { error } = await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),

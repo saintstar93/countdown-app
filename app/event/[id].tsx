@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import Reanimated, { runOnJS, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useEventsStore } from '~/store/eventsStore';
 import { useCountdown } from '~/hooks/useCountdown';
 import { exportEventToCalendar } from '~/services/calendar';
@@ -60,15 +60,32 @@ export default function EventDetailScreen() {
     router.replace(`/event/${nextId}`);
   }
 
+  const translateX = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
   const swipeGesture = Gesture.Pan()
     .failOffsetY([-15, 15])
     .activeOffsetX([-25, 25])
+    .onUpdate((e) => {
+      'worklet';
+      const canNext = currentIndex >= 0 && currentIndex < events.length - 1;
+      const canPrev = currentIndex > 0;
+      if ((e.translationX < 0 && canNext) || (e.translationX > 0 && canPrev)) {
+        translateX.value = e.translationX;
+      } else {
+        translateX.value = e.translationX * 0.1;
+      }
+    })
     .onEnd((e) => {
       'worklet';
       if (e.translationX < -60 && currentIndex >= 0 && currentIndex < events.length - 1) {
         runOnJS(navigateTo)(events[currentIndex + 1].id);
       } else if (e.translationX > 60 && currentIndex > 0) {
         runOnJS(navigateTo)(events[currentIndex - 1].id);
+      } else {
+        translateX.value = withSpring(0);
       }
     });
 
@@ -121,7 +138,15 @@ export default function EventDetailScreen() {
             <Pressable
               onPress={() => router.push(`/event/edit/${event.id}`)}
               hitSlop={8}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, marginRight: 4 })}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+                marginRight: 4,
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+              })}
             >
               <Ionicons name="create-outline" size={22} color={isDark ? '#F5F5F5' : '#2D2D2D'} />
             </Pressable>
@@ -141,7 +166,15 @@ export default function EventDetailScreen() {
                 ]);
               }}
               hitSlop={8}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, marginRight: 4 })}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+                marginRight: 4,
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+              })}
             >
               <Ionicons name="trash-outline" size={21} color="#EF4444" />
             </Pressable>
@@ -316,5 +349,11 @@ export default function EventDetailScreen() {
   // On web or for memories, no swipe gesture needed
   if (Platform.OS === 'web' || isMemory || events.length <= 1) return content;
 
-  return <GestureDetector gesture={swipeGesture}>{content}</GestureDetector>;
+  return (
+    <GestureDetector gesture={swipeGesture}>
+      <Reanimated.View style={[{ flex: 1 }, animatedStyle]}>
+        {content}
+      </Reanimated.View>
+    </GestureDetector>
+  );
 }

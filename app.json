@@ -1,25 +1,25 @@
 {
   "expo": {
-    "name": "countdown-app",
-    "slug": "countdown-app",
+    "name": "Nearday",
+    "slug": "nearday",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "countdownapp",
+    "scheme": "nearday",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "privacyPolicyUrl": "https://saintstar93.github.io/countdown-app/privacy.html",
+    "privacyPolicyUrl": "https://saintstar93.github.io/nearday/privacy.html",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.countdown.moments"
+      "bundleIdentifier": "com.nearday.app"
     },
     "android": {
-      "package": "app.countdown.moments",
+      "package": "com.nearday.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -38,7 +38,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Countdown accede alla tua galleria per aggiungere immagini agli eventi."
+          "photosPermission": "Nearday accede alla tua galleria per aggiungere immagini agli eventi."
         }
       ],
       "expo-notifications",
@@ -52,7 +52,7 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "baseUrl": "/countdown-app/"
+      "baseUrl": "/nearday/"
     }
   }
 }

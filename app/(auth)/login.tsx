@@ -68,7 +68,7 @@ export default function LoginScreen() {
         <View className="items-center mb-10">
           <Text className="text-5xl mb-3">📸</Text>
           <Text className="text-3xl font-bold text-[#1a1a1a] dark:text-white tracking-tight">
-            Countdown
+            Nearday
           </Text>
           <Text className="text-base text-gray-500 dark:text-gray-400 mt-1">
             I tuoi eventi, sempre con te

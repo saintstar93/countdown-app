@@ -1,6 +1,6 @@
 import { View, Text, FlatList, Pressable, Alert, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useEventsStore } from '~/store/eventsStore';
@@ -51,6 +51,8 @@ export default function CalendarSyncScreen() {
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
+
+  const router = useRouter();
 
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const cardBg = isDark ? '#242424' : '#FFFFFF';
@@ -120,7 +122,7 @@ export default function CalendarSyncScreen() {
   if (Platform.OS === 'web') {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario' }} />
+        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
         <Ionicons name="calendar-outline" size={56} color="#9B9B9B" style={{ marginBottom: 16 }} />
         <Text style={{ fontSize: 17, fontWeight: '700', color: textColor, marginBottom: 8 }}>
           Disponibile solo su mobile
@@ -136,7 +138,7 @@ export default function CalendarSyncScreen() {
   if (permissionDenied) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario' }} />
+        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
         <Ionicons name="lock-closed-outline" size={56} color="#9B9B9B" style={{ marginBottom: 16 }} />
         <Text style={{ fontSize: 17, fontWeight: '700', color: textColor, marginBottom: 8 }}>
           Accesso al calendario negato
@@ -152,7 +154,7 @@ export default function CalendarSyncScreen() {
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario' }} />
+        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
         <Text style={{ color: '#9B9B9B', fontSize: 15 }}>Caricamento eventi...</Text>
       </SafeAreaView>
     );
@@ -162,7 +164,7 @@ export default function CalendarSyncScreen() {
   if (calendarEvents.length === 0) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario' }} />
+        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
         <Ionicons name="calendar-outline" size={56} color="#9B9B9B" style={{ marginBottom: 16 }} />
         <Text style={{ fontSize: 17, fontWeight: '700', color: textColor, marginBottom: 8 }}>
           Nessun evento trovato
@@ -186,7 +188,7 @@ export default function CalendarSyncScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['bottom']}>
-      <Stack.Screen options={{ title: 'Sync Calendario' }} />
+      <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
 
       <FlatList
         data={flatItems}

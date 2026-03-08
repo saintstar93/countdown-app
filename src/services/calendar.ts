@@ -28,11 +28,11 @@ function buildICS(event: Event): string {
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Countdown App//IT',
+    'PRODID:-//Nearday//IT',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:${event.id}@countdown-app`,
+    `UID:${event.id}@nearday`,
     `DTSTAMP:${stamp}`,
     `DTSTART;VALUE=DATE:${dateStr}`,
     `DTEND;VALUE=DATE:${dateStr}`,
