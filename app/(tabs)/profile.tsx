@@ -15,6 +15,7 @@ import {
   getNotificationPermissionStatus,
 } from '~/services/notifications';
 import Constants from 'expo-constants';
+import Logo from '~/components/ui/Logo';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -385,6 +386,10 @@ export default function ProfileScreen() {
           />
         </Section>
 
+        <View style={{ alignItems: 'center', gap: 6, marginBottom: 8 }}>
+          <Logo size="small" showText={true} opacity={0.5} />
+          <Text style={{ fontSize: 11, color: '#9B9B9B' }}>v{APP_VERSION}</Text>
+        </View>
         <Text style={{ fontSize: 12, color: '#9B9B9B', textAlign: 'center', lineHeight: 18 }}>
           Fatto con ♥ · Immagini da Unsplash
         </Text>

@@ -21,7 +21,7 @@
     "android": {
       "package": "com.nearday.app",
       "adaptiveIcon": {
-        "backgroundColor": "#ED7449",
+        "backgroundColor": "#E8754A",
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },

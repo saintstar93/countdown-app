@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import PolaroidSwiper from '~/components/PolaroidSwiper';
+import Logo from '~/components/ui/Logo';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
@@ -138,9 +139,7 @@ function EmptyState({ isDark, accent, onAdd }: { isDark: boolean; accent: string
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 24 }}>
-      <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: isDark ? '#333333' : '#EEEEEE', alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 38 }}>📸</Text>
-      </View>
+      <Logo size="large" showText={false} opacity={0.35} />
       <View style={{ alignItems: 'center', gap: 8 }}>
         <Text style={{ fontSize: 22, fontWeight: '800', color: textColor, textAlign: 'center', letterSpacing: -0.5 }}>
           Nessun evento

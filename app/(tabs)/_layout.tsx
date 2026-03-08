@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
+import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+
+const ICON = require('../../assets/images/adaptive-icon.png');
 
 export default function TabLayout() {
   const isDark = useIsDark();
@@ -25,7 +28,7 @@ export default function TabLayout() {
         options={{
           title: 'Nearday',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="timer-outline" size={size} color={color} />
+            <Image source={ICON} style={{ width: size, height: size, tintColor: color }} />
           ),
         }}
       />

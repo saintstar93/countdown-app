@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useEventsStore } from '~/store/eventsStore';
+import Logo from '~/components/ui/Logo';
 import { formatShortDate } from '~/utils/date';
 import { useIsDark } from '~/hooks/useTheme';
 import type { Event } from '~/types/event';
@@ -107,9 +108,7 @@ export default function MemoriesScreen() {
 
       {memories.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 16 }}>
-          <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: isDark ? '#333333' : '#EEEEEE', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 38 }}>🎞️</Text>
-          </View>
+          <Logo size="large" showText={false} opacity={0.35} />
           <Text style={{ fontSize: 18, fontWeight: '700', color: textColor, textAlign: 'center' }}>
             Nessun ricordo ancora
           </Text>

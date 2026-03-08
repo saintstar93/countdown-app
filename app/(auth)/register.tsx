@@ -15,6 +15,7 @@ import { useAuth } from '~/hooks/useAuth';
 import { validateEmail, validatePassword } from '~/utils/validation';
 import Button from '~/components/ui/Button';
 import Input from '~/components/ui/Input';
+import Logo from '~/components/ui/Logo';
 
 interface FormErrors {
   name?: string | null;
@@ -109,8 +110,8 @@ export default function RegisterScreen() {
       >
         {/* Header */}
         <View className="items-center mb-10">
-          <Text className="text-5xl mb-3">📸</Text>
-          <Text className="text-3xl font-bold text-[#1a1a1a] dark:text-white tracking-tight">
+          <Logo size="medium" showText={false} />
+          <Text className="text-3xl font-bold text-[#1a1a1a] dark:text-white tracking-tight mt-4">
             Crea Account
           </Text>
           <Text className="text-base text-gray-500 dark:text-gray-400 mt-1">
