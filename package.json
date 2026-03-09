@@ -46,6 +46,7 @@
   "devDependencies": {
     "@types/react": "~19.1.0",
     "babel-plugin-transform-import-meta": "^2.3.3",
+    "jsonwebtoken": "^9.0.3",
     "typescript": "~5.8.0"
   },
   "private": true
