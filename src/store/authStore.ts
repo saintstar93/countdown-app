@@ -156,7 +156,15 @@ export const useAuthStore = create<AuthStore>()(
               token: credential.identityToken,
             });
             set({ isLoading: false });
-            return error ? error.message : null;
+            if (error) {
+              // Expo Go uses host.exp.Exponent as bundle ID — Apple Sign In
+              // requires a production/dev build with the real bundle identifier.
+              if (error.message.includes('Unacceptable audience')) {
+                return 'Apple Sign In non funziona in Expo Go. Usa una build di sviluppo (eas build --profile development).';
+              }
+              return error.message;
+            }
+            return null;
           }
 
           // Android / Web: OAuth PKCE flow via browser
