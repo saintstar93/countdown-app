@@ -43,7 +43,8 @@
         "android.permission.WRITE_CALENDAR",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.INTERNET"
+        "android.permission.INTERNET",
+        "android.permission.RECORD_AUDIO"
       ],
       "predictiveBackGestureEnabled": false
     },
@@ -72,6 +73,13 @@
     "experiments": {
       "typedRoutes": true,
       "baseUrl": "/nearday/"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "aa57bda9-68fc-4e58-919e-ac91b1da0b27"
+      }
+    },
+    "owner": "kamiwaza93"
   }
 }
