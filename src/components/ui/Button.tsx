@@ -1,6 +1,6 @@
 import { Pressable, Text, ActivityIndicator, View, type PressableProps } from 'react-native';
 
-export type ButtonVariant = 'primary' | 'outline' | 'ghost';
+export type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'dark';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   title: string;
@@ -28,6 +28,7 @@ export default function Button({
     variant === 'primary' ? 'bg-[#1a1a1a] dark:bg-white' : '',
     variant === 'outline' ? 'border border-gray-300 dark:border-gray-600 bg-white dark:bg-transparent' : '',
     variant === 'ghost' ? 'bg-transparent' : '',
+    variant === 'dark' ? 'bg-[#000000] dark:bg-[#1a1a1a]' : '',
     isDisabled ? 'opacity-50' : '',
   ]
     .filter(Boolean)
@@ -38,6 +39,7 @@ export default function Button({
     variant === 'primary' ? 'text-white dark:text-[#1a1a1a]' : '',
     variant === 'outline' ? 'text-[#1a1a1a] dark:text-white' : '',
     variant === 'ghost' ? 'text-[#1a1a1a] dark:text-white' : '',
+    variant === 'dark' ? 'text-white' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -52,7 +54,7 @@ export default function Button({
       {isLoading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? '#ffffff' : '#1a1a1a'}
+          color={variant === 'primary' || variant === 'dark' ? '#ffffff' : '#1a1a1a'}
         />
       ) : (
         <>

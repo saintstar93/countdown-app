@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -133,31 +134,57 @@ export const useAuthStore = create<AuthStore>()(
       signInWithApple: async () => {
         set({ isLoading: true });
         try {
-          const isAvailable = await AppleAuthentication.isAvailableAsync();
-          if (!isAvailable) {
+          // iOS: native Apple Authentication module (id_token flow)
+          if (Platform.OS === 'ios') {
+            const isAvailable = await AppleAuthentication.isAvailableAsync();
+            if (!isAvailable) {
+              set({ isLoading: false });
+              return 'Apple Sign In non disponibile su questo dispositivo';
+            }
+            const credential = await AppleAuthentication.signInAsync({
+              requestedScopes: [
+                AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                AppleAuthentication.AppleAuthenticationScope.EMAIL,
+              ],
+            });
+            if (!credential.identityToken) {
+              set({ isLoading: false });
+              return 'Token Apple non valido';
+            }
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: 'apple',
+              token: credential.identityToken,
+            });
             set({ isLoading: false });
-            return 'Apple Sign In non disponibile su questo dispositivo';
+            return error ? error.message : null;
           }
-          const credential = await AppleAuthentication.signInAsync({
-            requestedScopes: [
-              AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-              AppleAuthentication.AppleAuthenticationScope.EMAIL,
-            ],
-          });
-          if (!credential.identityToken) {
-            set({ isLoading: false });
-            return 'Token Apple non valido';
-          }
-          const { error } = await supabase.auth.signInWithIdToken({
+
+          // Android / Web: OAuth PKCE flow via browser
+          const redirectUrl = Linking.createURL('/');
+          const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'apple',
-            token: credential.identityToken,
+            options: { redirectTo: redirectUrl, skipBrowserRedirect: true },
           });
+          if (error || !data.url) {
+            set({ isLoading: false });
+            return error?.message ?? 'Errore Apple Sign In';
+          }
+          const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+          if (result.type === 'success') {
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
+            if (exchangeError) {
+              set({ isLoading: false });
+              return exchangeError.message;
+            }
+          }
           set({ isLoading: false });
-          return error ? error.message : null;
+          return null;
         } catch (err: unknown) {
           set({ isLoading: false });
-          const appleError = err as { code?: string };
-          if (appleError.code === 'ERR_REQUEST_CANCELED') return null; // User cancelled
+          if (Platform.OS === 'ios') {
+            const appleError = err as { code?: string };
+            if (appleError.code === 'ERR_REQUEST_CANCELED') return null; // User cancelled
+          }
           return 'Errore Apple Sign In';
         }
       },

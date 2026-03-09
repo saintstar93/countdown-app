@@ -9,7 +9,7 @@ import {
 import { useState } from 'react';
 import { Link } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '~/hooks/useAuth';
 import { validateEmail, validatePassword } from '~/utils/validation';
@@ -160,7 +160,15 @@ export default function LoginScreen() {
               style={{ height: 56 }}
               onPress={handleAppleSignIn}
             />
-          ) : null}
+          ) : (
+            <Button
+              title="Continua con Apple"
+              variant="dark"
+              onPress={handleAppleSignIn}
+              disabled={isLoading}
+              icon={<Ionicons name="logo-apple" size={20} color="#FFFFFF" />}
+            />
+          )}
         </View>
 
         {/* Register Link */}
