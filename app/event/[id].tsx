@@ -64,32 +64,24 @@ export default function EventDetailScreen() {
     router.replace(`/event/${nextId}`);
   }
 
-  const translateX = useSharedValue(0);
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+  const imageOpacity = useSharedValue(1);
+  const imageStyle = useAnimatedStyle(() => ({ opacity: imageOpacity.value }));
 
   const swipeGesture = Gesture.Pan()
-    .failOffsetY([-15, 15])
-    .activeOffsetX([-25, 25])
+    .failOffsetY([-20, 20])
+    .activeOffsetX([-30, 30])
     .onUpdate((e) => {
       'worklet';
-      const canNext = listIndex >= 0 && listIndex < list.length - 1;
-      const canPrev = listIndex > 0;
-      if ((e.translationX < 0 && canNext) || (e.translationX > 0 && canPrev)) {
-        translateX.value = e.translationX;
-      } else {
-        translateX.value = e.translationX * 0.1;
-      }
+      const moving = Math.abs(e.translationX) > 10;
+      imageOpacity.value = moving ? 0.85 : 1;
     })
     .onEnd((e) => {
       'worklet';
+      imageOpacity.value = withSpring(1);
       if (e.translationX < -60 && listIndex >= 0 && listIndex < list.length - 1) {
         runOnJS(navigateTo)(list[listIndex + 1].id);
       } else if (e.translationX > 60 && listIndex > 0) {
         runOnJS(navigateTo)(list[listIndex - 1].id);
-      } else {
-        translateX.value = withSpring(0);
       }
     });
 
@@ -188,45 +180,46 @@ export default function EventDetailScreen() {
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
-        {/* ── Image ── */}
-        <View style={{ width: SCREEN_W, height: IMAGE_H, backgroundColor: isDark ? '#333333' : '#EEEEEE', overflow: 'hidden' }}>
-          {event.imageUrl ? (
-            <>
-              {event.imageObjectFit === 'blur' ? (
-                <>
-                  <Image
-                    source={{ uri: event.imageUrl }}
-                    style={{ position: 'absolute', width: '100%', height: '100%' }}
-                    resizeMode="cover"
-                    blurRadius={12}
-                  />
+        {/* ── Image (swipe area) ── */}
+        <GestureDetector gesture={list.length > 1 && Platform.OS !== 'web' ? swipeGesture : Gesture.Pan()}>
+          <Reanimated.View style={[{ width: SCREEN_W, height: IMAGE_H, backgroundColor: isDark ? '#333333' : '#EEEEEE', overflow: 'hidden' }, imageStyle]}>
+            {event.imageUrl ? (
+              <>
+                {event.imageObjectFit === 'blur' ? (
+                  <>
+                    <Image
+                      source={{ uri: event.imageUrl }}
+                      style={{ position: 'absolute', width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                      blurRadius={12}
+                    />
+                    <Image
+                      source={{ uri: event.imageUrl }}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="contain"
+                    />
+                  </>
+                ) : (
                   <Image
                     source={{ uri: event.imageUrl }}
                     style={{ width: '100%', height: '100%' }}
-                    resizeMode="contain"
+                    resizeMode={event.imageObjectFit === 'center' ? 'cover' : (event.imageObjectFit ?? 'cover')}
                   />
-                </>
-              ) : (
-                <Image
-                  source={{ uri: event.imageUrl }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode={event.imageObjectFit === 'center' ? 'cover' : (event.imageObjectFit ?? 'cover')}
+                )}
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.3)']}
+                  locations={[0.55, 1]}
+                  style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: IMAGE_H * 0.4 }}
+                  pointerEvents="none"
                 />
-              )}
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.3)']}
-                locations={[0.55, 1]}
-                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: IMAGE_H * 0.4 }}
-                pointerEvents="none"
-              />
-            </>
-          ) : (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="calendar-outline" size={64} color="#9B9B9B" />
-            </View>
-          )}
-
-        </View>
+              </>
+            ) : (
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="calendar-outline" size={64} color="#9B9B9B" />
+              </View>
+            )}
+          </Reanimated.View>
+        </GestureDetector>
 
         {/* ── Dot indicator (events and memories with siblings) ── */}
         {list.length > 1 && (
@@ -350,14 +343,5 @@ export default function EventDetailScreen() {
     </SafeAreaView>
   );
 
-  // On web or single item, no swipe gesture needed
-  if (Platform.OS === 'web' || list.length <= 1) return content;
-
-  return (
-    <GestureDetector gesture={swipeGesture}>
-      <Reanimated.View style={[{ flex: 1 }, animatedStyle]}>
-        {content}
-      </Reanimated.View>
-    </GestureDetector>
-  );
+  return content;
 }
