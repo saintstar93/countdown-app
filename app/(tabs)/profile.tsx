@@ -349,13 +349,13 @@ export default function ProfileScreen() {
             icon="shield-checkmark-outline"
             label="Privacy Policy"
             isDark={isDark}
-            onPress={() => Linking.openURL('https://saintstar93.github.io/nearday/privacy.html').catch(() => Alert.alert('Errore', 'Impossibile aprire il link.'))}
+            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => Alert.alert('Errore', 'Impossibile aprire il link.'))}
           />
           <Row
             icon="document-text-outline"
             label="Termini di Servizio"
             isDark={isDark}
-            onPress={() => Linking.openURL('https://saintstar93.github.io/nearday/terms.html').catch(() => Alert.alert('Errore', 'Impossibile aprire il link.'))}
+            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => Alert.alert('Errore', 'Impossibile aprire il link.'))}
           />
           <Row
             icon="information-circle-outline"

@@ -10,10 +10,9 @@ import { useIsDark } from '~/hooks/useTheme';
 import type { Event } from '~/types/event';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-const GAP = 12;
 const H_PAD = 20;
-const CARD_W = (SCREEN_W - H_PAD * 2 - GAP) / 2;
-const IMAGE_H = CARD_W * 0.88;
+const CARD_W = SCREEN_W - H_PAD * 2;
+const IMAGE_H = CARD_W * 0.56;
 
 function MemoryCard({ event, index, onPress }: { event: Event; index: number; onPress: () => void }) {
   const isDark = useIsDark();
@@ -48,32 +47,33 @@ function MemoryCard({ event, index, onPress }: { event: Event; index: number; on
             />
           ) : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="heart-outline" size={28} color="#9B9B9B" />
+              <Ionicons name="heart-outline" size={36} color="#9B9B9B" />
             </View>
           )}
         </View>
 
         {/* Info */}
-        <View style={{ padding: 12, gap: 3 }}>
+        <View style={{ padding: 16, gap: 4 }}>
           <Text
-            style={{ fontSize: 13, fontWeight: '700', color: textColor, fontFamily: event.font ?? undefined }}
-            numberOfLines={2}
+            style={{ fontSize: 15, fontWeight: '700', color: textColor, fontFamily: event.font ?? undefined }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {event.title}
           </Text>
-          <Text style={{ fontSize: 11, color: '#9B9B9B', fontWeight: '500' }}>
+          <Text style={{ fontSize: 12, color: '#9B9B9B', fontWeight: '500' }}>
             {formatShortDate(event.date)}
           </Text>
 
           {/* Tags */}
           {event.tags.length > 0 && (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 3 }}>
-              {event.tags.slice(0, 2).map((tag) => (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+              {event.tags.slice(0, 3).map((tag) => (
                 <View
                   key={tag.id}
-                  style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 50, backgroundColor: tag.color + '22' }}
+                  style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 50, backgroundColor: tag.color + '22' }}
                 >
-                  <Text style={{ fontSize: 10, fontWeight: '600', color: tag.color }}>{tag.name}</Text>
+                  <Text style={{ fontSize: 11, fontWeight: '600', color: tag.color }}>{tag.name}</Text>
                 </View>
               ))}
             </View>
@@ -120,9 +120,7 @@ export default function MemoriesScreen() {
         <FlatList
           data={memories}
           keyExtractor={(item) => item.id}
-          numColumns={2}
-          contentContainerStyle={{ padding: H_PAD, gap: GAP }}
-          columnWrapperStyle={{ gap: GAP }}
+          contentContainerStyle={{ padding: H_PAD, gap: 14 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => (
             <MemoryCard

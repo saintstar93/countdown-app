@@ -193,14 +193,14 @@ export default function RegisterScreen() {
               Ho letto e accetto i{' '}
               <Text
                 className="underline text-gray-700 dark:text-gray-300"
-                onPress={() => Linking.openURL('https://saintstar93.github.io/nearday/terms.html').catch(() => {})}
+                onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => {})}
               >
                 Termini di Servizio
               </Text>
               {' '}e la{' '}
               <Text
                 className="underline text-gray-700 dark:text-gray-300"
-                onPress={() => Linking.openURL('https://saintstar93.github.io/nearday/privacy.html').catch(() => {})}
+                onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => {})}
               >
                 Privacy Policy
               </Text>

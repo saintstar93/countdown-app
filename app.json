@@ -13,7 +13,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#F5F5F0"
     },
-    "privacyPolicyUrl": "https://saintstar93.github.io/nearday/privacy.html",
+    "privacyPolicyUrl": "https://saintstar93.github.io/countdown-app/privacy.html",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.nearday.app",

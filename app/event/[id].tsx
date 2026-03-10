@@ -53,8 +53,12 @@ export default function EventDetailScreen() {
   const [toastVisible, setToastVisible] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
-  // Swipe navigation (active events only)
+  // Swipe navigation — active events AND memories
+  const isMemoryEarly = memories.some((e) => e.id === id);
   const currentIndex = events.findIndex((e) => e.id === id);
+  const memoryIndex = memories.findIndex((e) => e.id === id);
+  const list = isMemoryEarly ? memories : events;
+  const listIndex = isMemoryEarly ? memoryIndex : currentIndex;
 
   function navigateTo(nextId: string) {
     router.replace(`/event/${nextId}`);
@@ -70,8 +74,8 @@ export default function EventDetailScreen() {
     .activeOffsetX([-25, 25])
     .onUpdate((e) => {
       'worklet';
-      const canNext = currentIndex >= 0 && currentIndex < events.length - 1;
-      const canPrev = currentIndex > 0;
+      const canNext = listIndex >= 0 && listIndex < list.length - 1;
+      const canPrev = listIndex > 0;
       if ((e.translationX < 0 && canNext) || (e.translationX > 0 && canPrev)) {
         translateX.value = e.translationX;
       } else {
@@ -80,10 +84,10 @@ export default function EventDetailScreen() {
     })
     .onEnd((e) => {
       'worklet';
-      if (e.translationX < -60 && currentIndex >= 0 && currentIndex < events.length - 1) {
-        runOnJS(navigateTo)(events[currentIndex + 1].id);
-      } else if (e.translationX > 60 && currentIndex > 0) {
-        runOnJS(navigateTo)(events[currentIndex - 1].id);
+      if (e.translationX < -60 && listIndex >= 0 && listIndex < list.length - 1) {
+        runOnJS(navigateTo)(list[listIndex + 1].id);
+      } else if (e.translationX > 60 && listIndex > 0) {
+        runOnJS(navigateTo)(list[listIndex - 1].id);
       } else {
         translateX.value = withSpring(0);
       }
@@ -224,17 +228,17 @@ export default function EventDetailScreen() {
 
         </View>
 
-        {/* ── Dot indicator (only for active events with siblings) ── */}
-        {!isMemory && events.length > 1 && (
+        {/* ── Dot indicator (events and memories with siblings) ── */}
+        {list.length > 1 && (
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, paddingTop: 14 }}>
-            {events.map((_, i) => (
+            {list.map((_, i) => (
               <View
                 key={i}
                 style={{
-                  width: i === currentIndex ? 8 : 5,
-                  height: i === currentIndex ? 8 : 5,
+                  width: i === listIndex ? 8 : 5,
+                  height: i === listIndex ? 8 : 5,
                   borderRadius: 4,
-                  backgroundColor: i === currentIndex ? ACCENT : (isDark ? '#444' : '#CCC'),
+                  backgroundColor: i === listIndex ? ACCENT : (isDark ? '#444' : '#CCC'),
                 }}
               />
             ))}
@@ -346,8 +350,8 @@ export default function EventDetailScreen() {
     </SafeAreaView>
   );
 
-  // On web or for memories, no swipe gesture needed
-  if (Platform.OS === 'web' || isMemory || events.length <= 1) return content;
+  // On web or single item, no swipe gesture needed
+  if (Platform.OS === 'web' || list.length <= 1) return content;
 
   return (
     <GestureDetector gesture={swipeGesture}>
