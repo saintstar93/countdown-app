@@ -60,8 +60,12 @@ export default function EventDetailScreen() {
   const list = isMemoryEarly ? memories : events;
   const listIndex = isMemoryEarly ? memoryIndex : currentIndex;
 
-  function navigateTo(nextId: string) {
-    router.replace(`/event/${nextId}`);
+  function navigateForward(nextId: string) {
+    router.push(`/event/${nextId}`);
+  }
+
+  function navigateBack() {
+    router.back();
   }
 
   const imageOpacity = useSharedValue(1);
@@ -79,9 +83,9 @@ export default function EventDetailScreen() {
       'worklet';
       imageOpacity.value = withSpring(1);
       if (e.translationX < -60 && listIndex >= 0 && listIndex < list.length - 1) {
-        runOnJS(navigateTo)(list[listIndex + 1].id);
+        runOnJS(navigateForward)(list[listIndex + 1].id);
       } else if (e.translationX > 60 && listIndex > 0) {
-        runOnJS(navigateTo)(list[listIndex - 1].id);
+        runOnJS(navigateBack)();
       }
     });
 
