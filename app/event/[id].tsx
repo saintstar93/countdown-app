@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Reanimated, { runOnJS, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Reanimated, { runOnJS, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { useEventsStore } from '~/store/eventsStore';
 import { useCountdown } from '~/hooks/useCountdown';
 import { exportEventToCalendar } from '~/services/calendar';
@@ -43,7 +43,10 @@ export default function EventDetailScreen() {
   const events = useEventsStore((s) => s.events);
   const memories = useEventsStore((s) => s.memories);
   const removeEvent = useEventsStore((s) => s.removeEvent);
-  const event = [...events, ...memories].find((e) => e.id === id);
+
+  // Local display state — swipe changes this without touching the nav stack
+  const [displayId, setDisplayId] = useState(id as string);
+  const event = [...events, ...memories].find((e) => e.id === displayId);
 
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const cardBg = isDark ? '#242424' : '#FFFFFF';
@@ -53,19 +56,12 @@ export default function EventDetailScreen() {
   const [toastVisible, setToastVisible] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
-  // Swipe navigation — active events AND memories
-  const isMemoryEarly = memories.some((e) => e.id === id);
-  const currentIndex = events.findIndex((e) => e.id === id);
-  const memoryIndex = memories.findIndex((e) => e.id === id);
-  const list = isMemoryEarly ? memories : events;
-  const listIndex = isMemoryEarly ? memoryIndex : currentIndex;
+  const isMemory = memories.some((e) => e.id === displayId);
+  const list = isMemory ? memories : events;
+  const listIndex = list.findIndex((e) => e.id === displayId);
 
-  function navigateForward(nextId: string) {
-    router.push(`/event/${nextId}`);
-  }
-
-  function navigateBack() {
-    router.back();
+  function switchTo(nextId: string) {
+    setDisplayId(nextId);
   }
 
   const imageOpacity = useSharedValue(1);
@@ -76,16 +72,22 @@ export default function EventDetailScreen() {
     .activeOffsetX([-30, 30])
     .onUpdate((e) => {
       'worklet';
-      const moving = Math.abs(e.translationX) > 10;
-      imageOpacity.value = moving ? 0.85 : 1;
+      imageOpacity.value = Math.abs(e.translationX) > 10 ? 0.8 : 1;
     })
     .onEnd((e) => {
       'worklet';
-      imageOpacity.value = withSpring(1);
       if (e.translationX < -60 && listIndex >= 0 && listIndex < list.length - 1) {
-        runOnJS(navigateForward)(list[listIndex + 1].id);
+        imageOpacity.value = withTiming(0, { duration: 100 }, () => {
+          runOnJS(switchTo)(list[listIndex + 1].id);
+          imageOpacity.value = withTiming(1, { duration: 150 });
+        });
       } else if (e.translationX > 60 && listIndex > 0) {
-        runOnJS(navigateBack)();
+        imageOpacity.value = withTiming(0, { duration: 100 }, () => {
+          runOnJS(switchTo)(list[listIndex - 1].id);
+          imageOpacity.value = withTiming(1, { duration: 150 });
+        });
+      } else {
+        imageOpacity.value = withSpring(1);
       }
     });
 
@@ -118,8 +120,6 @@ export default function EventDetailScreen() {
       </SafeAreaView>
     );
   }
-
-  const isMemory = memories.some((e) => e.id === id);
 
   const content = (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['bottom']}>
