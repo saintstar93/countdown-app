@@ -132,7 +132,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
 
   // Derived
   const selectedFont = POLAROID_FONTS.find(f => f.key === selectedFontKey);
-  const isValid = title.trim().length > 0 && selectedDate !== null && selectedTagIds.length > 0;
+  const isValid = title.trim().length > 0 && selectedDate !== null;
 
   // Theme tokens
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
@@ -363,7 +363,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
 
       {/* ── CATEGORIA ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-        <SectionLabel muted={mutedColor}>Categoria *</SectionLabel>
+        <SectionLabel muted={mutedColor}>Categoria</SectionLabel>
 
         {userTags.length === 0 ? (
           <View style={{ paddingVertical: 12, alignItems: 'center' }}>

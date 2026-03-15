@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Pressable, Image, Dimensions } from 'react-native';
+import { View, Text, FlatList, Pressable, Image, Dimensions, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,7 +14,7 @@ const H_PAD = 20;
 const CARD_W = SCREEN_W - H_PAD * 2;
 const IMAGE_H = CARD_W * 0.56;
 
-function MemoryCard({ event, index, onPress }: { event: Event; index: number; onPress: () => void }) {
+function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: number; onPress: () => void; onDelete: () => void }) {
   const isDark = useIsDark();
   const cardBg = isDark ? '#242424' : '#FFFFFF';
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
@@ -23,6 +23,8 @@ function MemoryCard({ event, index, onPress }: { event: Event; index: number; on
     <Animated.View entering={FadeInDown.delay(index * 60).springify()}>
       <Pressable
         onPress={onPress}
+        onLongPress={onDelete}
+        delayLongPress={500}
         style={({ pressed }) => ({
           opacity: pressed ? 0.85 : 1,
           transform: [{ scale: pressed ? 0.98 : 1.0 }],
@@ -88,6 +90,22 @@ export default function MemoriesScreen() {
   const router = useRouter();
   const isDark = useIsDark();
   const memories = useEventsStore((s) => s.memories);
+  const removeEvent = useEventsStore((s) => s.removeEvent);
+
+  function handleDelete(event: Event) {
+    Alert.alert(
+      'Elimina ricordo',
+      `Vuoi eliminare definitivamente "${event.title}"? L'azione non è reversibile.`,
+      [
+        { text: 'Annulla', style: 'cancel' },
+        {
+          text: 'Elimina',
+          style: 'destructive',
+          onPress: () => removeEvent(event.id),
+        },
+      ],
+    );
+  }
 
   const bg = isDark ? '#1A1A1A' : '#F5F5F0';
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
@@ -127,6 +145,7 @@ export default function MemoriesScreen() {
               event={item}
               index={index}
               onPress={() => router.push(`/event/${item.id}`)}
+              onDelete={() => handleDelete(item)}
             />
           )}
         />

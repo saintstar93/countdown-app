@@ -12,10 +12,7 @@ import { useIsDark } from '~/hooks/useTheme';
 import type { Event } from '~/types/event';
 
 function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Buongiorno';
-  if (hour < 18) return 'Buon pomeriggio';
-  return 'Buonasera';
+  return 'Ciao';
 }
 
 export default function HomeScreen() {
