@@ -25,6 +25,7 @@ import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
 import { useSettingsStore } from '~/store/settingsStore';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 import { COUNTDOWN_FORMATS } from '~/constants/countdown';
 import { POLAROID_FONTS } from '~/constants/fonts';
 import { getCountdownValue, formatCountdown } from '~/utils/countdown';
@@ -36,20 +37,10 @@ import type { Event, CountdownFormat, Tag } from '~/types/event';
 const TITLE_MAX = 50;
 const TAG_COLORS = ['#3B82F6','#EC4899','#8B5CF6','#F59E0B','#10B981','#EF4444','#06B6D4','#84CC16'];
 
-const FIT_OPTIONS: { value: NonNullable<Event['imageObjectFit']>; label: string }[] = [
-  { value: 'cover',   label: 'Riempi' },
-  { value: 'contain', label: 'Adatta' },
-  { value: 'center',  label: 'Centra' },
-  { value: 'blur',    label: 'Sfumato' },
-];
+const FIT_OPTION_VALUES: NonNullable<Event['imageObjectFit']>[] = ['cover', 'contain', 'center', 'blur'];
 
-const MONTHS_IT = [
-  'Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre',
-];
-
-function formatDateIT(d: Date): string {
-  return `${d.getDate()} ${MONTHS_IT[d.getMonth()]} ${d.getFullYear()}`;
+function formatDateLocalized(d: Date, monthsFull: readonly string[]): string {
+  return `${d.getDate()} ${monthsFull[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function tomorrow(): Date {
@@ -92,6 +83,7 @@ function SectionLabel({ children, muted }: { children: string; muted: string }) 
 
 const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   ({ onValidityChange, initialValues, allowPastDate }, ref) => {
+  const t = useTranslation();
   const isDark = useIsDark();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -192,7 +184,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
     const saved = await addTag(user.id, { name, color: newTagColor });
     setIsAddingTag(false);
     if (!saved) {
-      Alert.alert('Errore', 'Impossibile salvare il tag. Riprova.');
+      Alert.alert(t.common.error, t.eventForm.tagSaveError);
       return;
     }
     setSelectedTagIds(prev => [...prev, saved.id]);
@@ -204,7 +196,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
   async function pickFromGallery() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permesso negato', "Concedi l'accesso alla galleria nelle impostazioni.");
+      Alert.alert(t.eventForm.galleryPermissionTitle, t.eventForm.galleryPermissionMessage);
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -230,7 +222,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
     setIsUploadingImage(false);
 
     if (error || !url) {
-      Alert.alert('Errore upload', error ?? 'Impossibile caricare l\'immagine');
+      Alert.alert(t.eventForm.uploadErrorTitle, error ?? t.eventForm.uploadErrorMessage);
       return;
     }
     setImageUrl(url);
@@ -255,7 +247,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
     >
       {/* ── TITOLO ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-        <SectionLabel muted={mutedColor}>Titolo *</SectionLabel>
+        <SectionLabel muted={mutedColor}>{t.eventForm.titleLabel}</SectionLabel>
         <TextInput
           style={{
             fontSize: 17,
@@ -268,10 +260,10 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
             borderWidth: 1,
             borderColor: title.trim() ? accent : borderColor,
           }}
-          placeholder="Nome dell'evento…"
+          placeholder={t.eventForm.titlePlaceholder}
           placeholderTextColor={mutedColor}
           value={title}
-          onChangeText={t => setTitle(t.slice(0, TITLE_MAX))}
+          onChangeText={v => setTitle(v.slice(0, TITLE_MAX))}
           maxLength={TITLE_MAX}
           returnKeyType="done"
         />
@@ -282,7 +274,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
 
       {/* ── DATA ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-        <SectionLabel muted={mutedColor}>Data *</SectionLabel>
+        <SectionLabel muted={mutedColor}>{t.eventForm.dateLabel}</SectionLabel>
         <Pressable
           onPress={() => setShowDatePicker(v => !v)}
           style={{
@@ -299,7 +291,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
         >
           <Ionicons name="calendar-outline" size={18} color={selectedDate ? accent : mutedColor} />
           <Text style={{ flex: 1, fontSize: 16, color: selectedDate ? textColor : mutedColor }}>
-            {selectedDate ? formatDateIT(selectedDate) : 'Seleziona una data…'}
+            {selectedDate ? formatDateLocalized(selectedDate, t.date.monthsFull) : t.eventForm.datePlaceholder}
           </Text>
           <Ionicons name={showDatePicker ? 'chevron-up' : 'chevron-down'} size={16} color={mutedColor} />
         </Pressable>
@@ -324,7 +316,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
 
       {/* ── FORMATO COUNTDOWN ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-        <SectionLabel muted={mutedColor}>Formato Countdown</SectionLabel>
+        <SectionLabel muted={mutedColor}>{t.eventForm.countdownFormatLabel}</SectionLabel>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {COUNTDOWN_FORMATS.map(f => {
@@ -356,20 +348,20 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
           alignItems: 'center',
         }}>
           <Text style={{ fontSize: 15, color: countdownPreview ? textColor : mutedColor, fontStyle: countdownPreview ? 'normal' : 'italic' }}>
-            {countdownPreview ?? 'Seleziona una data per la preview'}
+            {countdownPreview ?? t.eventForm.countdownPreviewEmpty}
           </Text>
         </View>
       </View>
 
       {/* ── CATEGORIA ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-        <SectionLabel muted={mutedColor}>Categoria</SectionLabel>
+        <SectionLabel muted={mutedColor}>{t.eventForm.categoryLabel}</SectionLabel>
 
         {userTags.length === 0 ? (
           <View style={{ paddingVertical: 12, alignItems: 'center' }}>
             <ActivityIndicator size="small" color={mutedColor} />
             <Text style={{ fontSize: 13, color: mutedColor, marginTop: 6 }}>
-              Caricamento tag…
+              {t.eventForm.loadingTags}
             </Text>
           </View>
         ) : (
@@ -414,7 +406,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
               }}
             >
               <Ionicons name="add" size={16} color={mutedColor} />
-              <Text style={{ fontSize: 14, color: mutedColor }}>Nuovo tag</Text>
+              <Text style={{ fontSize: 14, color: mutedColor }}>{t.eventForm.newTag}</Text>
             </Pressable>
           </View>
         )}
@@ -423,7 +415,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
           <View style={{ backgroundColor: isDark ? '#111' : '#F9FAFB', borderRadius: 10, padding: 12, gap: 10, borderWidth: 1, borderColor: borderColor }}>
             <TextInput
               style={{ fontSize: 15, color: textColor, backgroundColor: inputBg, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, borderWidth: 1, borderColor: borderColor }}
-              placeholder="Nome del tag…"
+              placeholder={t.eventForm.tagNamePlaceholder}
               placeholderTextColor={mutedColor}
               value={newTagName}
               onChangeText={setNewTagName}
@@ -443,7 +435,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                 onPress={() => { setShowNewTag(false); setNewTagName(''); }}
                 style={{ paddingVertical: 7, paddingHorizontal: 14, borderRadius: 8, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}
               >
-                <Text style={{ fontSize: 14, color: mutedColor }}>Annulla</Text>
+                <Text style={{ fontSize: 14, color: mutedColor }}>{t.common.cancel}</Text>
               </Pressable>
               <Pressable
                 onPress={handleAddTag}
@@ -452,7 +444,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
               >
                 {isAddingTag && <ActivityIndicator size="small" color="#fff" />}
                 <Text style={{ fontSize: 14, fontWeight: '600', color: accentText }}>
-                  {isAddingTag ? 'Salvataggio…' : 'Aggiungi'}
+                  {isAddingTag ? t.eventForm.saving : t.common.add}
                 </Text>
               </Pressable>
             </View>
@@ -462,7 +454,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
 
       {/* ── FONT ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-        <SectionLabel muted={mutedColor}>Font</SectionLabel>
+        <SectionLabel muted={mutedColor}>{t.eventForm.fontLabel}</SectionLabel>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {POLAROID_FONTS.map(font => {
@@ -482,7 +474,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                   }}
                 >
                   <Text numberOfLines={1} style={{ fontSize: 14, fontFamily: font.family, color: active ? accentText : textColor, fontWeight: '600' }}>
-                    {title.trim() || 'Evento'}
+                    {title.trim() || t.eventForm.fontPreview}
                   </Text>
                   <Text style={{ fontSize: 11, color: active ? (isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)') : mutedColor }}>
                     {font.label}
@@ -496,7 +488,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
 
       {/* ── IMMAGINE ── */}
       <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-        <SectionLabel muted={mutedColor}>Immagine</SectionLabel>
+        <SectionLabel muted={mutedColor}>{t.eventForm.imageLabel}</SectionLabel>
         {imageUrl ? (
           <View style={{ gap: 10 }}>
             <View style={{ borderRadius: 10, overflow: 'hidden', height: 180 }}>
@@ -507,7 +499,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }}
             >
               <Ionicons name="refresh-outline" size={16} color={mutedColor} />
-              <Text style={{ fontSize: 14, color: mutedColor }}>Cambia immagine</Text>
+              <Text style={{ fontSize: 14, color: mutedColor }}>{t.eventForm.changeImage}</Text>
             </Pressable>
           </View>
         ) : (
@@ -517,8 +509,8 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
               style={{ borderRadius: 12, borderWidth: 1.5, borderColor: borderColor, borderStyle: 'dashed', paddingVertical: 32, alignItems: 'center', gap: 8 }}
             >
               <Ionicons name="camera-outline" size={32} color={mutedColor} />
-              <Text style={{ fontSize: 15, fontWeight: '500', color: textColor }}>Cerca immagine</Text>
-              <Text style={{ fontSize: 13, color: mutedColor }}>Unsplash · Pexels</Text>
+              <Text style={{ fontSize: 15, fontWeight: '500', color: textColor }}>{t.eventForm.searchImage}</Text>
+              <Text style={{ fontSize: 13, color: mutedColor }}>{t.eventForm.imageProviders}</Text>
             </Pressable>
             <Pressable
               onPress={pickFromGallery}
@@ -530,7 +522,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                 : <Ionicons name="image-outline" size={16} color={mutedColor} />
               }
               <Text style={{ fontSize: 14, color: mutedColor }}>
-                {isUploadingImage ? 'Caricamento…' : 'Carica dalla galleria'}
+                {isUploadingImage ? t.eventForm.uploadLoading : t.eventForm.uploadFromGallery}
               </Text>
             </Pressable>
           </View>
@@ -540,7 +532,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
       {/* ── REGOLA IMMAGINE ── */}
       {imageUrl && (
         <View style={{ backgroundColor: cardBg, borderRadius: 14, padding: 16 }}>
-          <SectionLabel muted={mutedColor}>Regola Immagine</SectionLabel>
+          <SectionLabel muted={mutedColor}>{t.eventForm.imageFitLabel}</SectionLabel>
 
           {/* Real-time preview */}
           <View style={{ height: 180, borderRadius: 10, overflow: 'hidden', backgroundColor: isDark ? '#111' : '#E5E7EB', marginBottom: 12 }}>
@@ -559,26 +551,32 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            {FIT_OPTIONS.map(opt => {
-              const active = imageObjectFit === opt.value;
+            {FIT_OPTION_VALUES.map(value => {
+              const active = imageObjectFit === value;
+              const fitLabels: Record<string, string> = {
+                cover: t.eventForm.imageFitFill,
+                contain: t.eventForm.imageFitFit,
+                center: t.eventForm.imageFitCenter,
+                blur: t.eventForm.imageFitBlur,
+              };
               return (
                 <Pressable
-                  key={opt.value}
-                  onPress={() => setImageObjectFit(opt.value)}
+                  key={value}
+                  onPress={() => setImageObjectFit(value)}
                   style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: active ? accent : (isDark ? '#2A2A2A' : '#F3F4F6') }}
                 >
                   <View style={{ width: 44, height: 44, borderRadius: 6, overflow: 'hidden', backgroundColor: isDark ? '#111' : '#E5E7EB' }}>
-                    {opt.value === 'blur' ? (
+                    {value === 'blur' ? (
                       <>
                         <Image source={{ uri: imageUrl }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" blurRadius={8} />
                         <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
                       </>
                     ) : (
-                      <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode={opt.value === 'center' ? 'cover' : opt.value} />
+                      <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode={value === 'center' ? 'cover' : value} />
                     )}
                   </View>
                   <Text style={{ fontSize: 11, fontWeight: '500', color: active ? '#fff' : mutedColor }}>
-                    {opt.label}
+                    {fitLabels[value]}
                   </Text>
                 </Pressable>
               );

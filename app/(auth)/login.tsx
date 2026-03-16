@@ -13,6 +13,7 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '~/hooks/useAuth';
 import { validateEmail, validatePassword } from '~/utils/validation';
+import { useTranslation } from '~/i18n';
 import Button from '~/components/ui/Button';
 import Input from '~/components/ui/Input';
 import Logo from '~/components/ui/Logo';
@@ -24,6 +25,7 @@ interface FormErrors {
 }
 
 export default function LoginScreen() {
+  const t = useTranslation();
   const { signIn, signInWithGoogle, signInWithApple, isLoading } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -72,37 +74,37 @@ export default function LoginScreen() {
             Nearday
           </Text>
           <Text className="text-base text-gray-500 dark:text-gray-400 mt-1">
-            L&apos;attesa diventa bella
+            {t.auth.tagline}
           </Text>
         </View>
 
         {/* Form Card */}
         <View className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm shadow-black/10 mb-6">
           <Text className="text-xl font-bold text-[#1a1a1a] dark:text-white mb-6">
-            Accedi
+            {t.auth.login}
           </Text>
 
           <Input
-            label="Email"
+            label={t.auth.email}
             value={email}
-            onChangeText={(t) => {
-              setEmail(t);
+            onChangeText={(v) => {
+              setEmail(v);
               setErrors((e) => ({ ...e, email: null, general: null }));
             }}
-            placeholder="nome@esempio.com"
+            placeholder={t.auth.emailPlaceholder}
             keyboardType="email-address"
             autoComplete="email"
             error={errors.email}
           />
 
           <Input
-            label="Password"
+            label={t.auth.password}
             value={password}
-            onChangeText={(t) => {
-              setPassword(t);
+            onChangeText={(v) => {
+              setPassword(v);
               setErrors((e) => ({ ...e, password: null, general: null }));
             }}
-            placeholder="Minimo 8 caratteri"
+            placeholder={t.auth.passwordPlaceholder}
             secureTextEntry
             autoComplete="current-password"
             error={errors.password}
@@ -113,7 +115,7 @@ export default function LoginScreen() {
             <Link href="/(auth)/forgot-password" asChild>
               <Pressable>
                 <Text className="text-sm text-gray-500 dark:text-gray-400">
-                  Hai dimenticato la password?
+                  {t.auth.forgotPassword}
                 </Text>
               </Pressable>
             </Link>
@@ -128,7 +130,7 @@ export default function LoginScreen() {
           ) : null}
 
           <Button
-            title="Accedi"
+            title={t.auth.login}
             onPress={handleSignIn}
             isLoading={isLoading}
             disabled={isLoading}
@@ -138,14 +140,14 @@ export default function LoginScreen() {
         {/* Divider */}
         <View className="flex-row items-center mb-6">
           <View className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-          <Text className="text-gray-400 dark:text-gray-500 text-sm mx-4">oppure</Text>
+          <Text className="text-gray-400 dark:text-gray-500 text-sm mx-4">{t.auth.or}</Text>
           <View className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
         </View>
 
         {/* Social Buttons */}
         <View className="gap-3 mb-8">
           <Button
-            title="Continua con Google"
+            title={t.auth.continueGoogle}
             variant="outline"
             onPress={handleGoogleSignIn}
             disabled={isLoading}
@@ -162,7 +164,7 @@ export default function LoginScreen() {
             />
           ) : (
             <Button
-              title="Continua con Apple"
+              title={t.auth.continueApple}
               variant="dark"
               onPress={handleAppleSignIn}
               disabled={isLoading}
@@ -174,12 +176,12 @@ export default function LoginScreen() {
         {/* Register Link */}
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-500 dark:text-gray-400 text-sm">
-            Non hai un account?{' '}
+            {t.auth.noAccount}{' '}
           </Text>
           <Link href="/(auth)/register" asChild>
             <Pressable>
               <Text className="text-[#1a1a1a] dark:text-white font-semibold text-sm">
-                Registrati
+                {t.auth.register}
               </Text>
             </Pressable>
           </Link>

@@ -10,6 +10,13 @@ import { supabase } from '~/services/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { useEventsStore } from '~/store/eventsStore';
 import { useSettingsStore } from '~/store/settingsStore';
+import { en } from '~/i18n/translations/en';
+import { it } from '~/i18n/translations/it';
+
+function getT() {
+  const lang = useSettingsStore.getState().language;
+  return lang === 'it' ? it : en;
+}
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -71,7 +78,7 @@ export const useAuthStore = create<AuthStore>()(
           return null;
         } catch {
           set({ isLoading: false });
-          return 'Errore di rete';
+          return getT().auth.errors.networkError;
         }
       },
 
@@ -87,7 +94,7 @@ export const useAuthStore = create<AuthStore>()(
           return error ? error.message : null;
         } catch {
           set({ isLoading: false });
-          return 'Errore di rete';
+          return getT().auth.errors.networkError;
         }
       },
 
@@ -113,7 +120,7 @@ export const useAuthStore = create<AuthStore>()(
           });
           if (error || !data.url) {
             set({ isLoading: false });
-            return error?.message ?? 'Errore Google Sign In';
+            return error?.message ?? getT().auth.errors.googleSignIn;
           }
           const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
           if (result.type === 'success') {
@@ -127,7 +134,7 @@ export const useAuthStore = create<AuthStore>()(
           return null;
         } catch {
           set({ isLoading: false });
-          return 'Errore di rete';
+          return getT().auth.errors.networkError;
         }
       },
 
@@ -139,7 +146,7 @@ export const useAuthStore = create<AuthStore>()(
             const isAvailable = await AppleAuthentication.isAvailableAsync();
             if (!isAvailable) {
               set({ isLoading: false });
-              return 'Apple Sign In non disponibile su questo dispositivo';
+              return getT().auth.errors.appleNotAvailable;
             }
             const credential = await AppleAuthentication.signInAsync({
               requestedScopes: [
@@ -149,7 +156,7 @@ export const useAuthStore = create<AuthStore>()(
             });
             if (!credential.identityToken) {
               set({ isLoading: false });
-              return 'Token Apple non valido';
+              return getT().auth.errors.appleInvalidToken;
             }
             const { error } = await supabase.auth.signInWithIdToken({
               provider: 'apple',
@@ -175,7 +182,7 @@ export const useAuthStore = create<AuthStore>()(
           });
           if (error || !data.url) {
             set({ isLoading: false });
-            return error?.message ?? 'Errore Apple Sign In';
+            return error?.message ?? getT().auth.errors.appleSignIn;
           }
           const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
           if (result.type === 'success') {
@@ -193,7 +200,7 @@ export const useAuthStore = create<AuthStore>()(
             const appleError = err as { code?: string };
             if (appleError.code === 'ERR_REQUEST_CANCELED') return null; // User cancelled
           }
-          return 'Errore Apple Sign In';
+          return getT().auth.errors.appleSignIn;
         }
       },
 

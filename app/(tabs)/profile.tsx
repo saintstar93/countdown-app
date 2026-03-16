@@ -8,6 +8,8 @@ import { useEventsStore } from '~/store/eventsStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
 import type { ThemeMode } from '~/store/settingsStore';
+import type { Language } from '~/i18n';
+import { useTranslation } from '~/i18n';
 import { dbUpdateTheme, dbDeleteAccountData } from '~/services/database';
 import {
   cancelAllNotifications,
@@ -86,6 +88,7 @@ function Row({ icon, label, iconColor, isDark, right, onPress, isLast, danger }:
 }
 
 function ThemeSelector({ isDark, userId, accent }: { isDark: boolean; userId?: string; accent: string }) {
+  const t = useTranslation();
   const themeMode = useSettingsStore((s) => s.themeMode);
   const setThemeMode = useSettingsStore((s) => s.setThemeMode);
 
@@ -95,9 +98,9 @@ function ThemeSelector({ isDark, userId, accent }: { isDark: boolean; userId?: s
   }
 
   const options: { value: ThemeMode; label: string; icon: string }[] = [
-    { value: 'light', label: 'Chiaro', icon: 'sunny-outline' },
-    { value: 'system', label: 'Sistema', icon: 'phone-portrait-outline' },
-    { value: 'dark', label: 'Scuro', icon: 'moon-outline' },
+    { value: 'light', label: t.profile.themeLight, icon: 'sunny-outline' },
+    { value: 'system', label: t.profile.themeSystem, icon: 'phone-portrait-outline' },
+    { value: 'dark', label: t.profile.themeDark, icon: 'moon-outline' },
   ];
 
   return (
@@ -141,12 +144,15 @@ function ThemeSelector({ isDark, userId, accent }: { isDark: boolean; userId?: s
 }
 
 function AccentPicker({ isDark, accent }: { isDark: boolean; accent: string }) {
+  const t = useTranslation();
   const setAccentColor = useSettingsStore((s) => s.setAccentColor);
+
+  const colorLabels: Record<string, string> = t.profile.accentColors;
 
   return (
     <View style={{ marginBottom: 28 }}>
       <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 10, paddingHorizontal: 4 }}>
-        Colore tema
+        {t.profile.accentColor}
       </Text>
       <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
         {ACCENT_COLORS.map((color) => {
@@ -174,7 +180,62 @@ function AccentPicker({ isDark, accent }: { isDark: boolean; accent: string }) {
                 {active && <Ionicons name="checkmark" size={20} color="#FFFFFF" />}
               </View>
               <Text style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? (isDark ? '#F5F5F5' : '#2D2D2D') : '#9B9B9B' }}>
-                {color.label}
+                {colorLabels[color.key] ?? color.key}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function LanguagePicker({ isDark, accent }: { isDark: boolean; accent: string }) {
+  const t = useTranslation();
+  const language = useSettingsStore((s) => s.language);
+  const setLanguage = useSettingsStore((s) => s.setLanguage);
+
+  const options: { value: Language; label: string; flag: string }[] = [
+    { value: 'en', label: t.profile.languageEnglish, flag: '🇬🇧' },
+    { value: 'it', label: t.profile.languageItalian, flag: '🇮🇹' },
+  ];
+
+  return (
+    <View style={{ marginBottom: 28 }}>
+      <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 10, paddingHorizontal: 4 }}>
+        {t.profile.language}
+      </Text>
+      <View style={{
+        flexDirection: 'row',
+        backgroundColor: isDark ? '#242424' : '#FFFFFF',
+        borderRadius: 20,
+        padding: 6,
+        gap: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: isDark ? 0.2 : 0.06,
+        shadowRadius: 20,
+        elevation: 4,
+      }}>
+        {options.map((opt) => {
+          const active = language === opt.value;
+          return (
+            <Pressable
+              key={opt.value}
+              onPress={() => setLanguage(opt.value)}
+              style={({ pressed }) => ({
+                flex: 1,
+                alignItems: 'center',
+                paddingVertical: 10,
+                borderRadius: 14,
+                gap: 4,
+                backgroundColor: active ? (isDark ? '#333333' : accent + '18') : 'transparent',
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Text style={{ fontSize: 20 }}>{opt.flag}</Text>
+              <Text style={{ fontSize: 12, fontWeight: active ? '700' : '500', color: active ? accent : '#9B9B9B' }}>
+                {opt.label}
               </Text>
             </Pressable>
           );
@@ -185,6 +246,7 @@ function AccentPicker({ isDark, accent }: { isDark: boolean; accent: string }) {
 }
 
 export default function ProfileScreen() {
+  const t = useTranslation();
   const router = useRouter();
   const isDark = useIsDark();
   const { user, signOut } = useAuthStore();
@@ -198,11 +260,11 @@ export default function ProfileScreen() {
       const status = await getNotificationPermissionStatus();
       if (status === 'denied') {
         Alert.alert(
-          'Notifiche disabilitate',
-          'Le notifiche sono state disabilitate nelle impostazioni del telefono. Per attivarle, vai in Impostazioni → Notifiche → Nearday e abilita le notifiche.',
+          t.profile.notificationsDisabledTitle,
+          t.profile.notificationsDisabledMessage,
           [
-            { text: 'Annulla', style: 'cancel' },
-            { text: 'Apri Impostazioni', onPress: () => Linking.openSettings() },
+            { text: t.common.cancel, style: 'cancel' },
+            { text: t.profile.openSettings, onPress: () => Linking.openSettings() },
           ],
         );
         return;
@@ -225,39 +287,39 @@ export default function ProfileScreen() {
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
   const cardBg = isDark ? '#242424' : '#FFFFFF';
 
-  const displayName = user?.displayName ?? user?.email?.split('@')[0] ?? 'Utente';
+  const displayName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
   const email = user?.email ?? '';
 
   async function handleLogout() {
-    Alert.alert('Logout', 'Sei sicuro di voler uscire?', [
-      { text: 'Annulla', style: 'cancel' },
-      { text: 'Esci', style: 'destructive', onPress: async () => { await signOut(); } },
+    Alert.alert(t.profile.logoutTitle, t.profile.logoutMessage, [
+      { text: t.common.cancel, style: 'cancel' },
+      { text: t.profile.logoutConfirm, style: 'destructive', onPress: async () => { await signOut(); } },
     ]);
   }
 
   function handleDeleteAccount() {
     Alert.alert(
-      'Elimina account',
-      'Questa azione è irreversibile. Tutti i tuoi eventi, ricordi e dati personali verranno eliminati definitivamente.',
+      t.profile.deleteAccountTitle,
+      t.profile.deleteAccountMessage,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Elimina definitivamente',
+          text: t.profile.deleteAccountConfirm,
           style: 'destructive',
           onPress: () => {
             Alert.alert(
-              'Sei sicuro?',
-              'Confermando, tutti i tuoi dati verranno cancellati e non potranno essere recuperati.',
+              t.profile.deleteAccountConfirmTitle,
+              t.profile.deleteAccountConfirmMessage,
               [
-                { text: 'Annulla', style: 'cancel' },
+                { text: t.common.cancel, style: 'cancel' },
                 {
-                  text: 'Sì, elimina tutto',
+                  text: t.profile.deleteAccountFinalConfirm,
                   style: 'destructive',
                   onPress: async () => {
                     if (!user) return;
                     const { error } = await dbDeleteAccountData(user.id);
                     if (error) {
-                      Alert.alert('Errore', 'Impossibile eliminare i dati. Riprova o contatta danielepiani1993@gmail.com');
+                      Alert.alert(t.common.error, t.profile.deleteAccountError);
                       return;
                     }
                     await signOut();
@@ -277,7 +339,7 @@ export default function ProfileScreen() {
 
         {/* Header */}
         <Text style={{ fontSize: 28, fontWeight: '800', color: textColor, letterSpacing: -0.5, marginBottom: 24 }}>
-          Profilo
+          {t.profile.title}
         </Text>
 
         {/* User card */}
@@ -309,7 +371,7 @@ export default function ProfileScreen() {
         {/* Appearance */}
         <View style={{ marginBottom: 28 }}>
           <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 10, paddingHorizontal: 4 }}>
-            Aspetto
+            {t.profile.appearance}
           </Text>
           <ThemeSelector isDark={isDark} userId={user?.id} accent={accent} />
         </View>
@@ -317,12 +379,15 @@ export default function ProfileScreen() {
         {/* Accent color picker */}
         <AccentPicker isDark={isDark} accent={accent} />
 
+        {/* Language picker */}
+        <LanguagePicker isDark={isDark} accent={accent} />
+
         {/* Notifications — mobile only */}
         {Platform.OS !== 'web' && (
-          <Section title="Notifiche" isDark={isDark}>
+          <Section title={t.profile.notificationsEnabled} isDark={isDark}>
             <Row
               icon="notifications-outline"
-              label="Notifiche eventi"
+              label={t.profile.notificationsEnabled}
               isDark={isDark}
               isLast
               right={
@@ -338,38 +403,38 @@ export default function ProfileScreen() {
         )}
 
         {/* Support */}
-        <Section title="Supporto" isDark={isDark}>
+        <Section title={t.profile.support} isDark={isDark}>
           <Row
             icon="bulb-outline"
-            label="Suggerimenti"
+            label={t.profile.suggestions}
             isDark={isDark}
             onPress={() => router.push('/suggestions')}
           />
           <Row
             icon="shield-checkmark-outline"
-            label="Privacy Policy"
+            label={t.profile.privacyPolicy}
             isDark={isDark}
-            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => Alert.alert('Errore', 'Impossibile aprire il link.'))}
+            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => Alert.alert(t.common.error, t.profile.cannotOpenLink))}
           />
           <Row
             icon="document-text-outline"
-            label="Termini di Servizio"
+            label={t.profile.termsOfService}
             isDark={isDark}
-            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => Alert.alert('Errore', 'Impossibile aprire il link.'))}
+            onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => Alert.alert(t.common.error, t.profile.cannotOpenLink))}
           />
           <Row
             icon="information-circle-outline"
-            label={`Versione ${APP_VERSION}`}
+            label={`v${APP_VERSION}`}
             isDark={isDark}
             isLast
           />
         </Section>
 
         {/* Account */}
-        <Section title="Account" isDark={isDark}>
+        <Section title={t.profile.account} isDark={isDark}>
           <Row
             icon="log-out-outline"
-            label="Logout"
+            label={t.profile.logout}
             isDark={isDark}
             iconColor="#EF4444"
             danger
@@ -377,7 +442,7 @@ export default function ProfileScreen() {
           />
           <Row
             icon="trash-outline"
-            label="Elimina account"
+            label={t.profile.deleteAccount}
             isDark={isDark}
             iconColor="#EF4444"
             danger
@@ -391,7 +456,7 @@ export default function ProfileScreen() {
           <Text style={{ fontSize: 11, color: '#9B9B9B' }}>v{APP_VERSION}</Text>
         </View>
         <Text style={{ fontSize: 12, color: '#9B9B9B', textAlign: 'center', lineHeight: 18 }}>
-          Fatto con ♥ · Immagini da Unsplash
+          {t.profile.footer}
         </Text>
 
       </ScrollView>

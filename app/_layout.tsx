@@ -16,6 +16,7 @@ import { useIsDark } from '~/hooks/useTheme';
 import { useEventsStore } from '~/store/eventsStore';
 import { requestNotificationPermissions } from '~/services/notifications';
 import WebBanner from '~/components/WebBanner';
+import { useTranslation } from '~/i18n';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -60,6 +61,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const isDark = useIsDark();
+  const t = useTranslation();
   const { isAuthenticated, user, setUser } = useAuthStore();
   const loadProfile = useSettingsStore((s) => s.loadProfile);
   const loadFromSupabase = useEventsStore((s) => s.loadFromSupabase);
@@ -115,12 +117,12 @@ function RootLayoutNav() {
           <Stack screenOptions={{ headerBackTitle: '' }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="event/create" options={{ presentation: 'modal', title: 'Nuovo evento' }} />
-            <Stack.Screen name="event/[id]" options={{ title: 'Dettaglio evento' }} />
-            <Stack.Screen name="event/edit/[id]" options={{ title: 'Modifica evento' }} />
-            <Stack.Screen name="suggestions" options={{ title: 'Suggerimenti' }} />
-            <Stack.Screen name="calendar-sync" options={{ title: 'Sync Calendario' }} />
-            <Stack.Screen name="image-search" options={{ presentation: 'modal', title: 'Cerca immagine' }} />
+            <Stack.Screen name="event/create" options={{ presentation: 'modal', title: t.event.createTitle }} />
+            <Stack.Screen name="event/[id]" options={{ title: t.event.detailTitle }} />
+            <Stack.Screen name="event/edit/[id]" options={{ title: t.event.editTitle }} />
+            <Stack.Screen name="suggestions" options={{ title: t.suggestions.title }} />
+            <Stack.Screen name="calendar-sync" options={{ title: t.calendarSync.title }} />
+            <Stack.Screen name="image-search" options={{ presentation: 'modal', title: t.imageSearch.title }} />
           </Stack>
           <WebBanner />
         </View>

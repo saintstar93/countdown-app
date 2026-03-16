@@ -6,8 +6,10 @@ import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 
 export default function CreateEventScreen() {
+  const t = useTranslation();
   const router = useRouter();
   const isDark = useIsDark();
   const addEvent = useEventsStore((s) => s.addEvent);
@@ -22,7 +24,7 @@ export default function CreateEventScreen() {
     const error = await addEvent(data);
     setIsSaving(false);
     if (error) {
-      Alert.alert('Errore', error);
+      Alert.alert(t.common.error, error);
     } else {
       router.back();
     }
@@ -36,7 +38,7 @@ export default function CreateEventScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Nuovo Evento',
+          title: t.event.createTitle,
           presentation: 'modal',
           headerStyle: { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F0' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
@@ -55,7 +57,7 @@ export default function CreateEventScreen() {
                 style={{ opacity: canSave ? 1 : 0.35 }}
               >
                 <Text style={{ color: ACCENT, fontWeight: '700', fontSize: 16 }}>
-                  Salva
+                  {t.common.save}
                 </Text>
               </Pressable>
             )

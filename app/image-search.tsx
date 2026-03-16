@@ -16,11 +16,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useImageSearch } from '~/hooks/useImageSearch';
 import { useIsDark } from '~/hooks/useTheme';
 import { useUiStore } from '~/store/uiStore';
+import { useTranslation } from '~/i18n';
 import type { ImageSearchResult } from '~/types/api';
 
 const THUMB_SIZE = (Dimensions.get('window').width - 3) / 2;
 
 export default function ImageSearchScreen() {
+  const t = useTranslation();
   const router = useRouter();
   const { query: initialQuery } = useLocalSearchParams<{ query?: string }>();
   const isDark = useIsDark();
@@ -54,7 +56,7 @@ export default function ImageSearchScreen() {
     >
       <Stack.Screen
         options={{
-          title: 'Cerca immagine',
+          title: t.imageSearch.title,
           presentation: 'modal',
           headerStyle: { backgroundColor: bg },
           headerTintColor: textColor,
@@ -88,7 +90,7 @@ export default function ImageSearchScreen() {
           <Ionicons name="search" size={15} color={mutedColor} />
           <TextInput
             style={{ flex: 1, fontSize: 15, color: textColor }}
-            placeholder="Cerca un'immagine…"
+            placeholder={t.imageSearch.placeholder}
             placeholderTextColor={mutedColor}
             value={searchText}
             onChangeText={setSearchText}
@@ -105,7 +107,7 @@ export default function ImageSearchScreen() {
         </View>
 
         <Pressable onPress={handleSearch} hitSlop={8} style={{ opacity: searchText.trim() ? 1 : 0.4 }}>
-          <Text style={{ color: '#6366F1', fontWeight: '600', fontSize: 15 }}>Cerca</Text>
+          <Text style={{ color: '#6366F1', fontWeight: '600', fontSize: 15 }}>{t.imageSearch.searchButton}</Text>
         </Pressable>
       </View>
 
@@ -123,7 +125,7 @@ export default function ImageSearchScreen() {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <Ionicons name="images-outline" size={48} color={mutedColor} />
           <Text style={{ color: mutedColor, fontSize: 14, textAlign: 'center' }}>
-            {searchText.trim() ? 'Nessun risultato trovato.' : 'Cerca immagini per il tuo evento.'}
+            {searchText.trim() ? t.imageSearch.noResults : t.imageSearch.emptyState}
           </Text>
         </View>
       ) : (

@@ -12,6 +12,7 @@ import { exportEventToCalendar } from '~/services/calendar';
 import { formatDisplayDate } from '~/utils/date';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 import type { Event } from '~/types/event';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
@@ -22,10 +23,11 @@ const IMAGE_H = SCREEN_H * 0.46;
 function CountdownRow({ event }: { event: Event }) {
   const { formatted } = useCountdown(event.date, event.countdownFormat ?? 'days');
   const isDark = useIsDark();
+  const t = useTranslation();
   return (
     <View style={{ alignItems: 'center', paddingVertical: 22 }}>
       <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 2, textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 6 }}>
-        Mancano
+        {t.event.countdownLabel}
       </Text>
       <Text style={{ fontSize: 34, fontWeight: '800', color: isDark ? '#F5F5F5' : '#2D2D2D', letterSpacing: -0.5 }}>
         {formatted}
@@ -37,6 +39,7 @@ function CountdownRow({ event }: { event: Event }) {
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function EventDetailScreen() {
+  const t = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const isDark = useIsDark();
@@ -112,10 +115,10 @@ export default function EventDetailScreen() {
   if (!event) {
     return (
       <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
-        <Stack.Screen options={{ title: 'Evento non trovato' }} />
-        <Text style={{ color: textColor, fontSize: 16 }}>Evento non trovato.</Text>
+        <Stack.Screen options={{ title: t.event.notFound }} />
+        <Text style={{ color: textColor, fontSize: 16 }}>{t.event.notFoundMessage}</Text>
         <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: ACCENT, borderRadius: 50 }}>
-          <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Torna indietro</Text>
+          <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>{t.common.back}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -125,7 +128,7 @@ export default function EventDetailScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['bottom']}>
       {toastVisible && (
         <Animated.View style={{ position: 'absolute', bottom: 48, alignSelf: 'center', zIndex: 99, opacity: toastOpacity, backgroundColor: '#2D2D2D', paddingHorizontal: 22, paddingVertical: 13, borderRadius: 50 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>Evento esportato! 📅</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>{t.event.exportedToast}</Text>
         </Animated.View>
       )}
       <Stack.Screen
@@ -153,15 +156,12 @@ export default function EventDetailScreen() {
           ) : () => (
             <Pressable
               onPress={() => {
-                Alert.alert('Elimina ricordo', 'Vuoi eliminare questo ricordo? L\'azione non è reversibile.', [
-                  { text: 'Annulla', style: 'cancel' },
+                Alert.alert(t.event.deleteMemoryTitle, t.event.deleteMemoryMessage, [
+                  { text: t.common.cancel, style: 'cancel' },
                   {
-                    text: 'Elimina',
+                    text: t.common.delete,
                     style: 'destructive',
-                    onPress: async () => {
-                      await removeEvent(event.id);
-                      router.back();
-                    },
+                    onPress: async () => { await removeEvent(event.id); router.back(); },
                   },
                 ]);
               }}
@@ -248,7 +248,7 @@ export default function EventDetailScreen() {
           <View style={{ alignItems: 'center', paddingVertical: 20 }}>
             <View style={{ paddingHorizontal: 16, paddingVertical: 6, borderRadius: 50, backgroundColor: ACCENT + '20' }}>
               <Text style={{ fontSize: 12, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', color: ACCENT }}>
-                Ricordo
+                {t.event.memoryBadge}
               </Text>
             </View>
           </View>
@@ -318,7 +318,7 @@ export default function EventDetailScreen() {
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             >
               <Text style={{ fontSize: 11, color: '#9B9B9B', textDecorationLine: 'underline' }}>
-                Foto di {event.imageAuthor} su Unsplash
+                {t.event.unsplashAttribution(event.imageAuthor)}
               </Text>
             </Pressable>
           )}
@@ -339,7 +339,7 @@ export default function EventDetailScreen() {
             <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: isDark ? '#333333' : '#F0F0F0', alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name="calendar-outline" size={16} color="#9B9B9B" />
             </View>
-            <Text style={{ fontSize: 15, color: '#9B9B9B', fontWeight: '500' }}>Esporta al calendario</Text>
+            <Text style={{ fontSize: 15, color: '#9B9B9B', fontWeight: '500' }}>{t.event.exportToCalendar}</Text>
           </Pressable>
         </View>
 

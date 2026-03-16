@@ -6,9 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 import { dbCreateSuggestion } from '~/services/database';
 
 export default function SuggestionsScreen() {
+  const t = useTranslation();
   const router = useRouter();
   const isDark = useIsDark();
   const user = useAuthStore((s) => s.user);
@@ -25,18 +27,18 @@ export default function SuggestionsScreen() {
   async function handleSend() {
     const trimmed = text.trim();
     if (trimmed.length < 10) {
-      Alert.alert('Troppo corto', 'Scrivi almeno 10 caratteri per inviarci il tuo suggerimento.');
+      Alert.alert(t.suggestions.tooShortTitle, t.suggestions.tooShortMessage);
       return;
     }
     if (!user) {
-      Alert.alert('Errore', 'Devi essere autenticato per inviare un suggerimento.');
+      Alert.alert(t.common.error, t.suggestions.notAuthError);
       return;
     }
     setIsSending(true);
     const { error } = await dbCreateSuggestion(user.id, trimmed);
     setIsSending(false);
     if (error) {
-      Alert.alert('Errore', 'Impossibile inviare il suggerimento. Controlla la connessione e riprova.');
+      Alert.alert(t.common.error, t.suggestions.sendError);
       return;
     }
     setSent(true);
@@ -48,7 +50,7 @@ export default function SuggestionsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['bottom']}>
       <Stack.Screen
         options={{
-          title: 'Suggerimenti',
+          title: t.suggestions.title,
           headerStyle: { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F0' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerTintColor: '#9B9B9B',
@@ -70,10 +72,10 @@ export default function SuggestionsScreen() {
                 <Ionicons name="checkmark-circle" size={42} color={ACCENT} />
               </View>
               <Text style={{ fontSize: 24, fontWeight: '800', color: textColor, textAlign: 'center', letterSpacing: -0.5 }}>
-                Grazie!
+                {t.suggestions.successTitle}
               </Text>
               <Text style={{ fontSize: 15, color: '#9B9B9B', textAlign: 'center', lineHeight: 22 }}>
-                Il tuo suggerimento è stato ricevuto.{'\n'}Lo leggeremo con attenzione.
+                {t.suggestions.successMessage}
               </Text>
               <Pressable
                 onPress={() => router.back()}
@@ -86,7 +88,7 @@ export default function SuggestionsScreen() {
                   opacity: pressed ? 0.75 : 1,
                 })}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Torna indietro</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>{t.common.back}</Text>
               </Pressable>
             </View>
           ) : (
@@ -94,10 +96,10 @@ export default function SuggestionsScreen() {
             <>
               <View style={{ gap: 6 }}>
                 <Text style={{ fontSize: 17, fontWeight: '800', color: textColor, letterSpacing: -0.3 }}>
-                  Hai un'idea o un feedback?
+                  {t.suggestions.heading}
                 </Text>
                 <Text style={{ fontSize: 14, color: '#9B9B9B', lineHeight: 20 }}>
-                  Scrivi qui la tua proposta, segnalazione o qualsiasi cosa ti passi per la testa. Ogni suggerimento è prezioso.
+                  {t.suggestions.subtitle}
                 </Text>
               </View>
 
@@ -114,7 +116,7 @@ export default function SuggestionsScreen() {
                 <TextInput
                   value={text}
                   onChangeText={setText}
-                  placeholder="Scrivi il tuo suggerimento..."
+                  placeholder={t.suggestions.placeholder}
                   placeholderTextColor="#9B9B9B"
                   multiline
                   maxLength={2000}
@@ -130,7 +132,7 @@ export default function SuggestionsScreen() {
                 />
                 <View style={{ height: 1, backgroundColor: isDark ? '#333333' : '#F0F0F0' }} />
                 <Text style={{ fontSize: 11, color: '#9B9B9B', textAlign: 'right', paddingHorizontal: 16, paddingVertical: 10 }}>
-                  {text.trim().length} caratteri
+                  {t.suggestions.charCount(text.trim().length)}
                 </Text>
               </View>
 
@@ -157,7 +159,7 @@ export default function SuggestionsScreen() {
                   />
                 )}
                 <Text style={{ fontWeight: '700', fontSize: 16, color: canSend ? '#FFFFFF' : '#9B9B9B' }}>
-                  {isSending ? 'Invio in corso…' : 'Invia suggerimento'}
+                  {isSending ? t.suggestions.sending : t.suggestions.sendButton}
                 </Text>
               </Pressable>
             </>

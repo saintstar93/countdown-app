@@ -3,10 +3,12 @@ import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 
 const ICON = require('../../assets/images/adaptive-icon.png');
 
 export default function TabLayout() {
+  const t = useTranslation();
   const isDark = useIsDark();
   const accent = useAccentColor();
 
@@ -35,7 +37,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Nearday',
+          title: t.tabs.home,
           tabBarIcon: ({ color, size }) => (
             <Image source={ICON} style={{ width: size, height: size, tintColor: color }} />
           ),
@@ -44,7 +46,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="memories"
         options={{
-          title: 'Ricordi',
+          title: t.tabs.memories,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart-outline" size={size} color={color} />
           ),
@@ -53,7 +55,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profilo',
+          title: t.tabs.profile,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),

@@ -9,13 +9,11 @@ import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 import type { Event } from '~/types/event';
 
-function getGreeting(): string {
-  return 'Ciao';
-}
-
 export default function HomeScreen() {
+  const t = useTranslation();
   const router = useRouter();
   const isDark = useIsDark();
   const events = useEventsStore((s) => s.events);
@@ -46,7 +44,7 @@ export default function HomeScreen() {
         {/* Greeting split typography */}
         <View>
           <Text style={{ fontSize: 26, fontWeight: '800', color: textColor, letterSpacing: -0.5, lineHeight: 30 }}>
-            {getGreeting()}
+            {t.home.greeting}
           </Text>
           {displayName ? (
             <Text style={{ fontSize: 14, fontWeight: '300', color: mutedColor, letterSpacing: 0.1 }}>
@@ -70,7 +68,7 @@ export default function HomeScreen() {
                 justifyContent: 'center',
                 opacity: pressed ? 0.6 : 1,
               })}
-              accessibilityLabel="Sync Calendario"
+              accessibilityLabel={t.home.accessibilityCalendarSync}
             >
               <Ionicons name="calendar-outline" size={20} color={mutedColor} />
             </Pressable>
@@ -87,7 +85,7 @@ export default function HomeScreen() {
               justifyContent: 'center',
               opacity: pressed ? 0.6 : 1,
             })}
-            accessibilityLabel="Profilo"
+            accessibilityLabel={t.home.accessibilityProfile}
           >
             <Ionicons name="person-outline" size={20} color={mutedColor} />
           </Pressable>
@@ -103,7 +101,7 @@ export default function HomeScreen() {
               justifyContent: 'center',
               opacity: pressed ? 0.7 : 1,
             })}
-            accessibilityLabel="Aggiungi evento"
+            accessibilityLabel={t.home.accessibilityAddEvent}
           >
             <Ionicons name="add" size={22} color="#FFFFFF" />
           </Pressable>
@@ -133,16 +131,17 @@ export default function HomeScreen() {
 }
 
 function EmptyState({ isDark, accent, onAdd }: { isDark: boolean; accent: string; onAdd: () => void }) {
+  const t = useTranslation();
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 24 }}>
       <Logo size="large" showText={false} opacity={0.35} />
       <View style={{ alignItems: 'center', gap: 8 }}>
         <Text style={{ fontSize: 22, fontWeight: '800', color: textColor, textAlign: 'center', letterSpacing: -0.5 }}>
-          Nessun evento
+          {t.home.emptyTitle}
         </Text>
         <Text style={{ fontSize: 15, color: '#9B9B9B', textAlign: 'center', lineHeight: 22 }}>
-          Aggiungi il tuo primo evento e inizia il countdown
+          {t.home.emptySubtitle}
         </Text>
       </View>
       <Pressable
@@ -156,7 +155,7 @@ function EmptyState({ isDark, accent, onAdd }: { isDark: boolean; accent: string
         })}
       >
         <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>
-          Aggiungi evento
+          {t.home.emptyButton}
         </Text>
       </Pressable>
     </View>

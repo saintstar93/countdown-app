@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import { supabase } from '~/services/supabase';
 import { validatePassword } from '~/utils/validation';
+import { useTranslation } from '~/i18n';
 import Button from '~/components/ui/Button';
 import Input from '~/components/ui/Input';
 
@@ -14,6 +15,7 @@ interface FormErrors {
 }
 
 export default function ResetPasswordScreen() {
+  const t = useTranslation();
   const router = useRouter();
   const { code } = useLocalSearchParams<{ code?: string }>();
   const [password, setPassword] = useState('');
@@ -36,7 +38,7 @@ export default function ResetPasswordScreen() {
 
   function validate(): boolean {
     const passwordError = validatePassword(password);
-    const confirmError = password !== confirmPassword ? 'Le password non coincidono' : null;
+    const confirmError = password !== confirmPassword ? t.auth.errors.passwordsMismatch : null;
     setErrors({ password: passwordError, confirmPassword: confirmError });
     return !passwordError && !confirmError;
   }
@@ -61,7 +63,7 @@ export default function ResetPasswordScreen() {
   if (isExchanging) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F5F0E8] dark:bg-[#111111]">
-        <Text className="text-base text-gray-500 dark:text-gray-400">Verifica in corso...</Text>
+        <Text className="text-base text-gray-500 dark:text-gray-400">{t.auth.verifying}</Text>
       </View>
     );
   }
@@ -71,10 +73,10 @@ export default function ResetPasswordScreen() {
       <View className="flex-1 items-center justify-center px-6 bg-[#F5F0E8] dark:bg-[#111111]">
         <Text style={{ fontSize: 64 }} className="mb-4">✅</Text>
         <Text className="text-2xl font-bold text-[#1a1a1a] dark:text-white text-center mb-3">
-          Password aggiornata!
+          {t.auth.passwordUpdated}
         </Text>
         <Text className="text-gray-500 dark:text-gray-400 text-base text-center">
-          Reindirizzamento al login...
+          {t.auth.redirectingToLogin}
         </Text>
       </View>
     );
@@ -94,30 +96,30 @@ export default function ResetPasswordScreen() {
         <View className="items-center mb-10">
           <Text style={{ fontSize: 48 }} className="mb-3">🔒</Text>
           <Text className="text-3xl font-bold text-[#1a1a1a] dark:text-white tracking-tight">
-            Nuova Password
+            {t.auth.newPasswordTitle}
           </Text>
           <Text className="text-base text-gray-500 dark:text-gray-400 mt-1 text-center">
-            Scegli una nuova password sicura
+            {t.auth.newPasswordSubtitle}
           </Text>
         </View>
 
         {/* Form Card */}
         <View className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm shadow-black/10">
           <Input
-            label="Nuova Password"
+            label={t.auth.newPassword}
             value={password}
-            onChangeText={(t) => { setPassword(t); setErrors((e) => ({ ...e, password: null })); }}
-            placeholder="Minimo 8 caratteri"
+            onChangeText={(v) => { setPassword(v); setErrors((e) => ({ ...e, password: null })); }}
+            placeholder={t.auth.passwordPlaceholder}
             secureTextEntry
             autoComplete="new-password"
             error={errors.password}
           />
 
           <Input
-            label="Conferma Password"
+            label={t.auth.confirmPassword}
             value={confirmPassword}
-            onChangeText={(t) => { setConfirmPassword(t); setErrors((e) => ({ ...e, confirmPassword: null })); }}
-            placeholder="Ripeti la password"
+            onChangeText={(v) => { setConfirmPassword(v); setErrors((e) => ({ ...e, confirmPassword: null })); }}
+            placeholder={t.auth.confirmPasswordPlaceholder}
             secureTextEntry
             autoComplete="new-password"
             error={errors.confirmPassword}
@@ -132,7 +134,7 @@ export default function ResetPasswordScreen() {
           ) : null}
 
           <Button
-            title="Aggiorna Password"
+            title={t.auth.updatePassword}
             onPress={handleReset}
             isLoading={isLoading}
             disabled={isLoading}

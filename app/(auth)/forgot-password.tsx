@@ -5,10 +5,12 @@ import * as Linking from 'expo-linking';
 
 import { supabase } from '~/services/supabase';
 import { validateEmail } from '~/utils/validation';
+import { useTranslation } from '~/i18n';
 import Button from '~/components/ui/Button';
 import Input from '~/components/ui/Input';
 
 export default function ForgotPasswordScreen() {
+  const t = useTranslation();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -41,16 +43,16 @@ export default function ForgotPasswordScreen() {
       <View className="flex-1 items-center justify-center px-6 bg-[#F5F0E8] dark:bg-[#111111]">
         <Text style={{ fontSize: 64 }} className="mb-4">✉️</Text>
         <Text className="text-2xl font-bold text-[#1a1a1a] dark:text-white text-center mb-3">
-          Controlla la tua email
+          {t.auth.checkEmail}
         </Text>
         <Text className="text-gray-500 dark:text-gray-400 text-base text-center mb-8">
-          Ti abbiamo inviato le istruzioni per reimpostare la password a{'\n'}
+          {t.auth.resetInstructionsSent}{'\n'}
           <Text className="font-semibold text-[#1a1a1a] dark:text-white">{email}</Text>
         </Text>
         <Link href="/(auth)/login" asChild>
           <Pressable>
             <Text className="text-[#1a1a1a] dark:text-white font-semibold text-base underline">
-              Torna al Login
+              {t.auth.backToLogin}
             </Text>
           </Pressable>
         </Link>
@@ -72,20 +74,20 @@ export default function ForgotPasswordScreen() {
         <View className="items-center mb-10">
           <Text style={{ fontSize: 48 }} className="mb-3">🔑</Text>
           <Text className="text-3xl font-bold text-[#1a1a1a] dark:text-white tracking-tight text-center">
-            Password Dimenticata?
+            {t.auth.forgotPasswordTitle}
           </Text>
           <Text className="text-base text-gray-500 dark:text-gray-400 mt-1 text-center">
-            Inserisci la tua email per ricevere{'\n'}le istruzioni di reset
+            {t.auth.forgotPasswordSubtitle}
           </Text>
         </View>
 
         {/* Form Card */}
         <View className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm shadow-black/10 mb-6">
           <Input
-            label="Email"
+            label={t.auth.email}
             value={email}
-            onChangeText={(t) => { setEmail(t); setEmailError(null); setGeneralError(null); }}
-            placeholder="nome@esempio.com"
+            onChangeText={(v) => { setEmail(v); setEmailError(null); setGeneralError(null); }}
+            placeholder={t.auth.emailPlaceholder}
             keyboardType="email-address"
             autoComplete="email"
             error={emailError}
@@ -100,7 +102,7 @@ export default function ForgotPasswordScreen() {
           ) : null}
 
           <Button
-            title="Invia Email di Reset"
+            title={t.auth.sendResetEmail}
             onPress={handleSend}
             isLoading={isLoading}
             disabled={isLoading}
@@ -110,12 +112,12 @@ export default function ForgotPasswordScreen() {
         {/* Back to login */}
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-500 dark:text-gray-400 text-sm">
-            Ricordi la password?{' '}
+            {t.auth.rememberPassword}{' '}
           </Text>
           <Link href="/(auth)/login" asChild>
             <Pressable>
               <Text className="text-[#1a1a1a] dark:text-white font-semibold text-sm">
-                Accedi
+                {t.auth.login}
               </Text>
             </Pressable>
           </Link>

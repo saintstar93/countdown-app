@@ -7,6 +7,7 @@ import { useEventsStore } from '~/store/eventsStore';
 import Logo from '~/components/ui/Logo';
 import { formatShortDate } from '~/utils/date';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 import type { Event } from '~/types/event';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -100,6 +101,7 @@ function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: 
 }
 
 export default function MemoriesScreen() {
+  const t = useTranslation();
   const router = useRouter();
   const isDark = useIsDark();
   const memories = useEventsStore((s) => s.memories);
@@ -107,12 +109,12 @@ export default function MemoriesScreen() {
 
   function handleDelete(event: Event) {
     Alert.alert(
-      'Elimina ricordo',
-      `Vuoi eliminare definitivamente "${event.title}"? L'azione non è reversibile.`,
+      t.memories.deleteTitle,
+      t.memories.deleteMessage(event.title),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Elimina',
+          text: t.common.delete,
           style: 'destructive',
           onPress: () => removeEvent(event.id),
         },
@@ -128,12 +130,12 @@ export default function MemoriesScreen() {
       {/* Header */}
       <View style={{ paddingHorizontal: 22, paddingTop: 10, paddingBottom: 6 }}>
         <Text style={{ fontSize: 28, fontWeight: '800', color: textColor, letterSpacing: -0.5 }}>
-          Ricordi
+          {t.memories.title}
         </Text>
         <Text style={{ fontSize: 13, color: '#9B9B9B', marginTop: 2 }}>
           {memories.length > 0
-            ? `${memories.length} ricord${memories.length === 1 ? 'o' : 'i'}`
-            : 'Gli eventi passati appariranno qui'}
+            ? (memories.length === 1 ? t.memories.count_one : t.memories.count_other).replace('{{count}}', String(memories.length))
+            : t.memories.emptySubtitle}
         </Text>
       </View>
 
@@ -141,10 +143,10 @@ export default function MemoriesScreen() {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 16 }}>
           <Logo size="large" showText={false} opacity={0.35} />
           <Text style={{ fontSize: 18, fontWeight: '700', color: textColor, textAlign: 'center' }}>
-            Nessun ricordo ancora
+            {t.memories.emptyTitle}
           </Text>
           <Text style={{ fontSize: 14, color: '#9B9B9B', textAlign: 'center', lineHeight: 20 }}>
-            I tuoi eventi passati appariranno qui come ricordi da rivivere
+            {t.memories.emptyDescription}
           </Text>
         </View>
       ) : (

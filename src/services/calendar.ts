@@ -2,6 +2,14 @@ import { Platform } from 'react-native';
 import type { Event } from '~/types/event';
 import type { ApiResponse } from '~/types/api';
 import { formatCountdown, getCountdownValue } from '~/utils/countdown';
+import { useSettingsStore } from '~/store/settingsStore';
+import { en } from '~/i18n/translations/en';
+import { it } from '~/i18n/translations/it';
+
+function getT() {
+  const lang = useSettingsStore.getState().language;
+  return lang === 'it' ? it : en;
+}
 
 // ─── Shared ICS builder ───────────────────────────────────────────────────────
 
@@ -57,7 +65,7 @@ function downloadICSWeb(event: Event): ApiResponse<null> {
     URL.revokeObjectURL(url);
     return { data: null, error: null };
   } catch {
-    return { data: null, error: 'Download non riuscito' };
+    return { data: null, error: getT().services.calendarDownloadFailed };
   }
 }
 
@@ -67,13 +75,13 @@ async function addToCalendarIOS(event: Event): Promise<ApiResponse<null>> {
   const CalendarAPI = await import('expo-calendar');
   const { status } = await CalendarAPI.requestCalendarPermissionsAsync();
   if (status !== 'granted') {
-    return { data: null, error: 'Permesso calendario negato' };
+    return { data: null, error: getT().services.calendarPermissionDenied };
   }
 
   const calendars = await CalendarAPI.getCalendarsAsync(CalendarAPI.EntityTypes.EVENT);
   const writable = calendars.find((c) => c.allowsModifications) ?? calendars[0];
   if (!writable) {
-    return { data: null, error: 'Nessun calendario disponibile' };
+    return { data: null, error: getT().services.calendarNoCalendars };
   }
 
   const countdownValue = getCountdownValue(event.date);
@@ -100,7 +108,7 @@ async function shareICSAndroid(event: Event): Promise<ApiResponse<null>> {
 
   const isAvailable = await Sharing.isAvailableAsync();
   if (!isAvailable) {
-    return { data: null, error: 'Condivisione non disponibile su questo dispositivo' };
+    return { data: null, error: getT().services.calendarSharingUnavailable };
   }
 
   const fileName = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
@@ -112,7 +120,7 @@ async function shareICSAndroid(event: Event): Promise<ApiResponse<null>> {
 
   await Sharing.shareAsync(fileUri, {
     mimeType: 'text/calendar',
-    dialogTitle: 'Aggiungi al calendario',
+    dialogTitle: getT().services.calendarAddTitle,
   });
 
   return { data: null, error: null };
@@ -130,6 +138,6 @@ export async function exportEventToCalendar(event: Event): Promise<ApiResponse<n
     }
     return await shareICSAndroid(event);
   } catch {
-    return { data: null, error: "Errore durante l'esportazione al calendario" };
+    return { data: null, error: getT().services.calendarExportError };
   }
 }

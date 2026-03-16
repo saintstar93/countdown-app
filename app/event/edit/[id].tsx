@@ -6,8 +6,10 @@ import EventForm, { type EventFormHandle } from '~/components/EventForm';
 import { useEventsStore } from '~/store/eventsStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 
 export default function EditEventScreen() {
+  const t = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const isDark = useIsDark();
@@ -33,7 +35,7 @@ export default function EditEventScreen() {
     const error = await updateEvent(id, data);
     setIsSaving(false);
     if (error) {
-      Alert.alert('Errore', error);
+      Alert.alert(t.common.error, error);
     } else {
       router.back();
     }
@@ -41,19 +43,19 @@ export default function EditEventScreen() {
 
   const handleDelete = useCallback(() => {
     Alert.alert(
-      'Elimina evento',
-      'Sei sicuro di voler eliminare questo evento?',
+      t.event.deleteEventTitle,
+      t.event.deleteEventMessage,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Elimina',
+          text: t.event.deleteEventConfirm,
           style: 'destructive',
           onPress: async () => {
             setIsDeleting(true);
             const error = await removeEvent(id);
             setIsDeleting(false);
             if (error) {
-              Alert.alert('Errore', error);
+              Alert.alert(t.common.error, error);
             } else {
               router.dismiss(2);
             }
@@ -66,10 +68,10 @@ export default function EditEventScreen() {
   if (!event) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
-        <Stack.Screen options={{ title: 'Evento non trovato' }} />
-        <Text style={{ color: textColor, fontSize: 16 }}>Evento non trovato.</Text>
+        <Stack.Screen options={{ title: t.event.notFound }} />
+        <Text style={{ color: textColor, fontSize: 16 }}>{t.event.notFoundMessage}</Text>
         <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: ACCENT, borderRadius: 50 }}>
-          <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Torna indietro</Text>
+          <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>{t.common.back}</Text>
         </Pressable>
       </View>
     );
@@ -79,7 +81,7 @@ export default function EditEventScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Modifica Evento',
+          title: t.event.editTitle,
           presentation: 'card',
           headerStyle: { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F0' },
           headerTitleStyle: { color: textColor, fontWeight: '700' },
@@ -93,7 +95,7 @@ export default function EditEventScreen() {
                 hitSlop={12}
                 style={{ opacity: (isFormValid && !busy) ? 1 : 0.35 }}
               >
-                <Text style={{ color: ACCENT, fontWeight: '700', fontSize: 16 }}>Salva</Text>
+                <Text style={{ color: ACCENT, fontWeight: '700', fontSize: 16 }}>{t.common.save}</Text>
               </Pressable>
             )
           ),
@@ -127,7 +129,7 @@ export default function EditEventScreen() {
             : <Ionicons name="trash-outline" size={18} color="#DC2626" />
           }
           <Text style={{ color: '#DC2626', fontWeight: '700', fontSize: 15 }}>
-            {isDeleting ? 'Eliminazione…' : 'Elimina evento'}
+            {isDeleting ? t.event.deleting : t.event.deleteButton}
           </Text>
         </Pressable>
       </View>

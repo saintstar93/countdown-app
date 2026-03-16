@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '~/hooks/useAuth';
 import { validateEmail, validatePassword } from '~/utils/validation';
+import { useTranslation } from '~/i18n';
 import Button from '~/components/ui/Button';
 import Input from '~/components/ui/Input';
 import Logo from '~/components/ui/Logo';
@@ -25,20 +26,21 @@ interface FormErrors {
   general?: string | null;
 }
 
-function validateName(name: string): string | null {
-  if (!name.trim()) return 'Il nome è obbligatorio';
-  if (name.trim().length < 2) return 'Il nome deve avere almeno 2 caratteri';
-  return null;
-}
-
-function validateConfirmPassword(password: string, confirm: string): string | null {
-  if (!confirm) return 'Conferma la password';
-  if (password !== confirm) return 'Le password non coincidono';
-  return null;
-}
-
 export default function RegisterScreen() {
+  const t = useTranslation();
   const { signUp, isLoading } = useAuth();
+
+  function validateName(name: string): string | null {
+    if (!name.trim()) return t.auth.errors.nameRequired;
+    if (name.trim().length < 2) return t.auth.errors.nameTooShort;
+    return null;
+  }
+
+  function validateConfirmPassword(password: string, confirm: string): string | null {
+    if (!confirm) return t.auth.errors.confirmPassword;
+    if (password !== confirm) return t.auth.errors.passwordsMismatch;
+    return null;
+  }
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -81,16 +83,16 @@ export default function RegisterScreen() {
       <View className="flex-1 items-center justify-center px-6 bg-[#F5F0E8] dark:bg-[#111111]">
         <Text className="text-5xl mb-4">✉️</Text>
         <Text className="text-2xl font-bold text-[#1a1a1a] dark:text-white text-center mb-3">
-          Controlla la tua email
+          {t.auth.checkEmail}
         </Text>
         <Text className="text-gray-500 dark:text-gray-400 text-base text-center mb-8">
-          Ti abbiamo inviato un link di verifica a{'\n'}
+          {t.auth.verificationSent}{'\n'}
           <Text className="font-semibold text-[#1a1a1a] dark:text-white">{email}</Text>
         </Text>
         <Link href="/(auth)/login" asChild>
           <Pressable>
             <Text className="text-[#1a1a1a] dark:text-white font-semibold text-base underline">
-              Torna al Login
+              {t.auth.backToLogin}
             </Text>
           </Pressable>
         </Link>
@@ -112,49 +114,49 @@ export default function RegisterScreen() {
         <View className="items-center mb-10">
           <Logo size="medium" showText={false} />
           <Text className="text-3xl font-bold text-[#1a1a1a] dark:text-white tracking-tight mt-4">
-            Crea Account
+            {t.auth.createAccount}
           </Text>
           <Text className="text-base text-gray-500 dark:text-gray-400 mt-1">
-            Inizia a contare i tuoi momenti
+            {t.auth.taglineRegister}
           </Text>
         </View>
 
         {/* Form Card */}
         <View className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm shadow-black/10 mb-8">
           <Input
-            label="Nome"
+            label={t.auth.name}
             value={name}
-            onChangeText={(t) => { setName(t); clearFieldError('name'); }}
-            placeholder="Come ti chiami?"
+            onChangeText={(v) => { setName(v); clearFieldError('name'); }}
+            placeholder={t.auth.namePlaceholder}
             autoCapitalize="words"
             error={errors.name}
           />
 
           <Input
-            label="Email"
+            label={t.auth.email}
             value={email}
-            onChangeText={(t) => { setEmail(t); clearFieldError('email'); }}
-            placeholder="nome@esempio.com"
+            onChangeText={(v) => { setEmail(v); clearFieldError('email'); }}
+            placeholder={t.auth.emailPlaceholder}
             keyboardType="email-address"
             autoComplete="email"
             error={errors.email}
           />
 
           <Input
-            label="Password"
+            label={t.auth.password}
             value={password}
-            onChangeText={(t) => { setPassword(t); clearFieldError('password'); }}
-            placeholder="Minimo 8 caratteri"
+            onChangeText={(v) => { setPassword(v); clearFieldError('password'); }}
+            placeholder={t.auth.passwordPlaceholder}
             secureTextEntry
             autoComplete="new-password"
             error={errors.password}
           />
 
           <Input
-            label="Conferma Password"
+            label={t.auth.confirmPassword}
             value={confirmPassword}
-            onChangeText={(t) => { setConfirmPassword(t); clearFieldError('confirmPassword'); }}
-            placeholder="Ripeti la password"
+            onChangeText={(v) => { setConfirmPassword(v); clearFieldError('confirmPassword'); }}
+            placeholder={t.auth.confirmPasswordPlaceholder}
             secureTextEntry
             autoComplete="new-password"
             error={errors.confirmPassword}
@@ -190,25 +192,25 @@ export default function RegisterScreen() {
               {termsAccepted && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
             </View>
             <Text className="text-xs text-gray-500 dark:text-gray-400 flex-1 leading-5">
-              Ho letto e accetto i{' '}
+              {t.auth.termsPrefix}{' '}
               <Text
                 className="underline text-gray-700 dark:text-gray-300"
                 onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/terms.html').catch(() => {})}
               >
-                Termini di Servizio
+                {t.auth.termsOfService}
               </Text>
-              {' '}e la{' '}
+              {' '}{t.auth.termsSeparator}{' '}
               <Text
                 className="underline text-gray-700 dark:text-gray-300"
                 onPress={() => Linking.openURL('https://saintstar93.github.io/countdown-app/privacy.html').catch(() => {})}
               >
-                Privacy Policy
+                {t.auth.privacyPolicy}
               </Text>
             </Text>
           </Pressable>
 
           <Button
-            title="Crea Account"
+            title={t.auth.createAccount}
             onPress={handleRegister}
             isLoading={isLoading}
             disabled={isLoading || !termsAccepted}
@@ -218,12 +220,12 @@ export default function RegisterScreen() {
         {/* Login Link */}
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-500 dark:text-gray-400 text-sm">
-            Hai già un account?{' '}
+            {t.auth.hasAccount}{' '}
           </Text>
           <Link href="/(auth)/login" asChild>
             <Pressable>
               <Text className="text-[#1a1a1a] dark:text-white font-semibold text-sm">
-                Accedi
+                {t.auth.login}
               </Text>
             </Pressable>
           </Link>

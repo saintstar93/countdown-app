@@ -7,6 +7,7 @@ import { useEventsStore } from '~/store/eventsStore';
 import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
+import { useTranslation } from '~/i18n';
 
 type CalendarEvent = {
   id: string;
@@ -22,11 +23,7 @@ type MonthGroup = {
   data: CalendarEvent[];
 };
 
-const WEEK_DAYS = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
-const MONTHS_FULL = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-
-function groupByMonth(events: CalendarEvent[]): MonthGroup[] {
+function groupByMonth(events: CalendarEvent[], monthsFull: readonly string[]): MonthGroup[] {
   const map = new Map<string, CalendarEvent[]>();
   for (const ev of events) {
     const d = ev.startDate;
@@ -36,11 +33,12 @@ function groupByMonth(events: CalendarEvent[]): MonthGroup[] {
   }
   return Array.from(map.entries()).map(([key, data]) => {
     const [year, month] = key.split('-').map(Number);
-    return { key, label: `${MONTHS_FULL[month]} ${year}`, data };
+    return { key, label: `${monthsFull[month]} ${year}`, data };
   });
 }
 
 export default function CalendarSyncScreen() {
+  const t = useTranslation();
   const isDark = useIsDark();
   const accent = useAccentColor();
   const user = useAuthStore((s) => s.user);
@@ -90,7 +88,7 @@ export default function CalendarSyncScreen() {
         }));
       setCalendarEvents(mapped);
     } catch {
-      Alert.alert('Errore', 'Impossibile accedere al calendario.');
+      Alert.alert(t.common.error, t.calendarSync.errorMessage);
     }
     setLoading(false);
   }
@@ -110,25 +108,25 @@ export default function CalendarSyncScreen() {
       tags: [],
     });
     if (error) {
-      Alert.alert('Errore', error);
+      Alert.alert(t.common.error, error);
     } else {
       setAddedIds((prev) => new Set(prev).add(ev.id));
     }
   }
 
-  const groups = groupByMonth(calendarEvents);
+  const groups = groupByMonth(calendarEvents, t.date.monthsFull);
 
   // ── Web placeholder ──
   if (Platform.OS === 'web') {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
+        <Stack.Screen options={{ title: t.calendarSync.title, headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
         <Ionicons name="calendar-outline" size={56} color="#9B9B9B" style={{ marginBottom: 16 }} />
         <Text style={{ fontSize: 17, fontWeight: '700', color: textColor, marginBottom: 8 }}>
-          Disponibile solo su mobile
+          {t.calendarSync.webOnly}
         </Text>
         <Text style={{ fontSize: 14, color: '#9B9B9B', textAlign: 'center', paddingHorizontal: 40 }}>
-          Scarica l'app su iOS o Android per sincronizzare il tuo calendario.
+          {t.calendarSync.webOnlyMessage}
         </Text>
       </SafeAreaView>
     );
@@ -138,13 +136,13 @@ export default function CalendarSyncScreen() {
   if (permissionDenied) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
+        <Stack.Screen options={{ title: t.calendarSync.title, headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
         <Ionicons name="lock-closed-outline" size={56} color="#9B9B9B" style={{ marginBottom: 16 }} />
         <Text style={{ fontSize: 17, fontWeight: '700', color: textColor, marginBottom: 8 }}>
-          Accesso al calendario negato
+          {t.calendarSync.permissionDenied}
         </Text>
         <Text style={{ fontSize: 14, color: '#9B9B9B', textAlign: 'center', paddingHorizontal: 40, lineHeight: 20 }}>
-          Vai in Impostazioni → Privacy → Calendario e abilita l'accesso per Countdown.
+          {t.calendarSync.permissionDeniedMessage}
         </Text>
       </SafeAreaView>
     );
@@ -154,8 +152,8 @@ export default function CalendarSyncScreen() {
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
-        <Text style={{ color: '#9B9B9B', fontSize: 15 }}>Caricamento eventi...</Text>
+        <Stack.Screen options={{ title: t.calendarSync.title, headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
+        <Text style={{ color: '#9B9B9B', fontSize: 15 }}>{t.calendarSync.loading}</Text>
       </SafeAreaView>
     );
   }
@@ -164,13 +162,13 @@ export default function CalendarSyncScreen() {
   if (calendarEvents.length === 0) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} edges={['bottom']}>
-        <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
+        <Stack.Screen options={{ title: t.calendarSync.title, headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
         <Ionicons name="calendar-outline" size={56} color="#9B9B9B" style={{ marginBottom: 16 }} />
         <Text style={{ fontSize: 17, fontWeight: '700', color: textColor, marginBottom: 8 }}>
-          Nessun evento trovato
+          {t.calendarSync.emptyTitle}
         </Text>
         <Text style={{ fontSize: 14, color: '#9B9B9B', textAlign: 'center', paddingHorizontal: 40 }}>
-          Non ci sono eventi nei prossimi 4 mesi nel tuo calendario.
+          {t.calendarSync.emptyMessage}
         </Text>
       </SafeAreaView>
     );
@@ -188,7 +186,7 @@ export default function CalendarSyncScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={['bottom']}>
-      <Stack.Screen options={{ title: 'Sync Calendario', headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
+      <Stack.Screen options={{ title: t.calendarSync.title, headerLeft: () => <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 8 }}><Ionicons name="chevron-back" size={26} color={isDark ? '#F5F5F5' : '#2D2D2D'} /></Pressable> }} />
 
       <FlatList
         data={flatItems}
@@ -207,7 +205,7 @@ export default function CalendarSyncScreen() {
           const { ev } = item;
           const d = ev.startDate;
           const dayNum = d.getDate();
-          const dayName = WEEK_DAYS[d.getDay()];
+          const dayName = t.calendarSync.daysShort[d.getDay()];
           const isAdded = addedIds.has(ev.id);
           const alreadyExists = events.some((e) => e.title === ev.title);
 
@@ -240,7 +238,7 @@ export default function CalendarSyncScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 14, fontWeight: '700', color: textColor }} numberOfLines={1}>{ev.title}</Text>
                 <Text style={{ fontSize: 12, color: '#9B9B9B', marginTop: 2 }}>
-                  {ev.allDay ? 'Tutto il giorno' : `${ev.startDate.getHours().toString().padStart(2, '0')}:${ev.startDate.getMinutes().toString().padStart(2, '0')}`}
+                  {ev.allDay ? t.calendarSync.allDay : `${ev.startDate.getHours().toString().padStart(2, '0')}:${ev.startDate.getMinutes().toString().padStart(2, '0')}`}
                 </Text>
               </View>
 
@@ -260,7 +258,7 @@ export default function CalendarSyncScreen() {
                     opacity: pressed ? 0.6 : 1,
                   })}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: textColor }}>Aggiungi</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: textColor }}>{t.calendarSync.addButton}</Text>
                 </Pressable>
               )}
             </View>
