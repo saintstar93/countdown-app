@@ -1,8 +1,10 @@
 import { View, Text, Image, Dimensions } from 'react-native';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import type { ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { Event } from '~/types/event';
 import { useCountdown } from '~/hooks/useCountdown';
+import { useAccentColor } from '~/hooks/useAccentColor';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -21,21 +23,29 @@ function formatDate(isoDate: string): string {
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function CountdownLine({ event }: { event: Event }) {
+function CountdownPill({ event }: { event: Event }) {
   const { formatted } = useCountdown(event.date, event.countdownFormat ?? 'days');
+  const accent = useAccentColor();
   return (
-    <Text
-      style={{
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#374151',
-        textAlign: 'center',
-        letterSpacing: 0.1,
-      }}
-      numberOfLines={1}
-    >
-      Mancano {formatted}
-    </Text>
+    <View style={{
+      paddingHorizontal: 12,
+      paddingVertical: 5,
+      borderRadius: 50,
+      backgroundColor: accent + '18',
+    }}>
+      <Text
+        style={{
+          fontSize: 11,
+          fontWeight: '700',
+          color: accent,
+          textAlign: 'center',
+          letterSpacing: 0.3,
+        }}
+        numberOfLines={1}
+      >
+        {formatted}
+      </Text>
+    </View>
   );
 }
 
@@ -99,7 +109,7 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
           </>
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 48 }}>📸</Text>
+            <Ionicons name="camera-outline" size={44} color="#9CA3AF" />
           </View>
         )}
       </View>
@@ -110,7 +120,7 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
           height: BOTTOM_AREA,
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 4,
+          gap: 5,
           paddingHorizontal: 8,
         }}
       >
@@ -121,7 +131,7 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
             fontWeight: '700',
             color: '#111827',
             textAlign: 'center',
-            letterSpacing: -0.2,
+            letterSpacing: -0.3,
             fontFamily: event.font ?? undefined,
           }}
           numberOfLines={1}
@@ -132,18 +142,19 @@ export default function PolaroidCard({ event, animatedStyle }: PolaroidCardProps
         {/* Date */}
         <Text
           style={{
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '500',
             color: '#9CA3AF',
             textAlign: 'center',
-            letterSpacing: 0.2,
+            letterSpacing: 0.3,
+            textTransform: 'uppercase',
           }}
         >
           {formatDate(event.date)}
         </Text>
 
-        {/* Countdown — dark gray */}
-        <CountdownLine event={event} />
+        {/* Countdown pill */}
+        <CountdownPill event={event} />
       </View>
     </Animated.View>
   );

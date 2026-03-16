@@ -12,7 +12,7 @@ import type { Event } from '~/types/event';
 const { width: SCREEN_W } = Dimensions.get('window');
 const H_PAD = 20;
 const CARD_W = SCREEN_W - H_PAD * 2;
-const IMAGE_H = CARD_W * 0.56;
+const IMAGE_S = 90;
 
 function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: number; onPress: () => void; onDelete: () => void }) {
   const isDark = useIsDark();
@@ -30,17 +30,27 @@ function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: 
           transform: [{ scale: pressed ? 0.98 : 1.0 }],
           width: CARD_W,
           backgroundColor: cardBg,
-          borderRadius: 20,
-          overflow: 'hidden',
+          borderRadius: 18,
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 14,
+          gap: 14,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
+          shadowOffset: { width: 0, height: 2 },
           shadowOpacity: isDark ? 0.2 : 0.06,
-          shadowRadius: 20,
-          elevation: 4,
+          shadowRadius: 12,
+          elevation: 3,
         })}
       >
-        {/* Image */}
-        <View style={{ width: CARD_W, height: IMAGE_H, backgroundColor: isDark ? '#333333' : '#EEEEEE' }}>
+        {/* Square image */}
+        <View style={{
+          width: IMAGE_S,
+          height: IMAGE_S,
+          borderRadius: 12,
+          backgroundColor: isDark ? '#333333' : '#EEEEEE',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}>
           {event.imageUrl ? (
             <Image
               source={{ uri: event.imageUrl }}
@@ -49,16 +59,16 @@ function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: 
             />
           ) : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="heart-outline" size={36} color="#9B9B9B" />
+              <Ionicons name="heart-outline" size={28} color="#9B9B9B" />
             </View>
           )}
         </View>
 
         {/* Info */}
-        <View style={{ padding: 16, gap: 4 }}>
+        <View style={{ flex: 1, gap: 4 }}>
           <Text
             style={{ fontSize: 15, fontWeight: '700', color: textColor, fontFamily: event.font ?? undefined }}
-            numberOfLines={1}
+            numberOfLines={2}
             ellipsizeMode="tail"
           >
             {event.title}
@@ -69,8 +79,8 @@ function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: 
 
           {/* Tags */}
           {event.tags.length > 0 && (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-              {event.tags.slice(0, 3).map((tag) => (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 2 }}>
+              {event.tags.slice(0, 2).map((tag) => (
                 <View
                   key={tag.id}
                   style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 50, backgroundColor: tag.color + '22' }}
@@ -81,6 +91,9 @@ function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: 
             </View>
           )}
         </View>
+
+        {/* Chevron */}
+        <Ionicons name="chevron-forward" size={16} color={isDark ? '#444' : '#CCC'} />
       </Pressable>
     </Animated.View>
   );
@@ -138,7 +151,7 @@ export default function MemoriesScreen() {
         <FlatList
           data={memories}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: H_PAD, gap: 14 }}
+          contentContainerStyle={{ padding: H_PAD, gap: 10 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => (
             <MemoryCard

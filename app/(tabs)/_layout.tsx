@@ -18,8 +18,17 @@ export default function TabLayout() {
         tabBarInactiveTintColor: isDark ? '#555555' : '#AAAAAA',
         tabBarStyle: {
           backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
-          borderTopColor: isDark ? '#2A2A2A' : '#F0F0F0',
-          borderTopWidth: 1,
+          borderTopWidth: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: isDark ? 0.25 : 0.07,
+          shadowRadius: 20,
+          elevation: 10,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          letterSpacing: 0.2,
         },
       }}
     >
