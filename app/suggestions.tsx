@@ -1,19 +1,16 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, Alert, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, Alert, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Linking } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '~/store/authStore';
 import { useAccentColor } from '~/hooks/useAccentColor';
 import { useIsDark } from '~/hooks/useTheme';
 import { useTranslation } from '~/i18n';
-import { dbCreateSuggestion } from '~/services/database';
 
 export default function SuggestionsScreen() {
   const t = useTranslation();
   const router = useRouter();
   const isDark = useIsDark();
-  const user = useAuthStore((s) => s.user);
   const [text, setText] = useState('');
   const [sent, setSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -30,17 +27,17 @@ export default function SuggestionsScreen() {
       Alert.alert(t.suggestions.tooShortTitle, t.suggestions.tooShortMessage);
       return;
     }
-    if (!user) {
-      Alert.alert(t.common.error, t.suggestions.notAuthError);
-      return;
-    }
     setIsSending(true);
-    const { error } = await dbCreateSuggestion(user.id, trimmed);
+    const subject = encodeURIComponent(t.suggestions.emailSubject);
+    const body = encodeURIComponent(trimmed);
+    const mailto = `mailto:nearday.support@gmail.com?subject=${subject}&body=${body}`;
+    const canOpen = await Linking.canOpenURL(mailto);
     setIsSending(false);
-    if (error) {
+    if (!canOpen) {
       Alert.alert(t.common.error, t.suggestions.sendError);
       return;
     }
+    await Linking.openURL(mailto);
     setSent(true);
   }
 
