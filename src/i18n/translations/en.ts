@@ -262,6 +262,6 @@ export const en = {
     calendarAddTitle: 'Add to calendar',
     calendarExportError: 'Error exporting to calendar',
   },
-} as const;
+};
 
 export type Translations = typeof en;

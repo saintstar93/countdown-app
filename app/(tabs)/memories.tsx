@@ -17,6 +17,7 @@ const IMAGE_S = 90;
 
 function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: number; onPress: () => void; onDelete: () => void }) {
   const isDark = useIsDark();
+  const t = useTranslation();
   const cardBg = isDark ? '#242424' : '#FFFFFF';
   const textColor = isDark ? '#F5F5F5' : '#2D2D2D';
 
