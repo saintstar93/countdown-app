@@ -87,7 +87,7 @@ function MemoryCard({ event, index, onPress, onDelete }: { event: Event; index: 
                   style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 50, backgroundColor: tag.color + '22' }}
                 >
                   <Text style={{ fontSize: 11, fontWeight: '600', color: tag.color }}>
-                    {(t.defaultTagNames as Record<string, string>)[tag.id] ?? tag.name}
+                    {(t.defaultTagNames as Record<string, string>)[tag.name] ?? tag.name}
                   </Text>
                 </View>
               ))}

@@ -313,7 +313,7 @@ export default function EventDetailScreen() {
                 >
                   <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: tag.color }} />
                   <Text style={{ fontSize: 13, fontWeight: '600', color: tag.color }}>
-                    {(t.defaultTagNames as Record<string, string>)[tag.id] ?? tag.name}
+                    {(t.defaultTagNames as Record<string, string>)[tag.name] ?? tag.name}
                   </Text>
                 </View>
               ))}

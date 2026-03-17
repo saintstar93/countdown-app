@@ -161,11 +161,11 @@ export const en = {
   },
 
   defaultTagNames: {
-    travel: 'Travel',
-    birthday: 'Birthday',
-    concert: 'Concert',
-    work: 'Work',
-    personal: 'Personal',
+    Viaggio: 'Travel',
+    Compleanno: 'Birthday',
+    Concerto: 'Concert',
+    Lavoro: 'Work',
+    Personale: 'Personal',
   },
 
   eventForm: {

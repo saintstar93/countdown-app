@@ -14,7 +14,7 @@ export default function TagChip({ tag }: TagChipProps) {
       style={{ backgroundColor: tag.color + '33' }}
     >
       <Text className="text-xs font-medium" style={{ color: tag.color }}>
-        {(t.defaultTagNames as Record<string, string>)[tag.id] ?? tag.name}
+        {(t.defaultTagNames as Record<string, string>)[tag.name] ?? tag.name}
       </Text>
     </View>
   );

@@ -163,11 +163,11 @@ export const it: Translations = {
   },
 
   defaultTagNames: {
-    travel: 'Viaggio',
-    birthday: 'Compleanno',
-    concert: 'Concerto',
-    work: 'Lavoro',
-    personal: 'Personale',
+    Viaggio: 'Viaggio',
+    Compleanno: 'Compleanno',
+    Concerto: 'Concerto',
+    Lavoro: 'Lavoro',
+    Personale: 'Personale',
   },
 
   eventForm: {
