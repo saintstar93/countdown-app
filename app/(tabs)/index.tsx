@@ -96,7 +96,7 @@ export default function HomeScreen() {
               width: 40,
               height: 40,
               borderRadius: 20,
-              backgroundColor: accent,
+              backgroundColor: isDark ? accent : '#2D2D2D',
               alignItems: 'center',
               justifyContent: 'center',
               opacity: pressed ? 0.7 : 1,
