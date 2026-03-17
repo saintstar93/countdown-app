@@ -312,7 +312,9 @@ export default function EventDetailScreen() {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 50, backgroundColor: tag.color + '22' }}
                 >
                   <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: tag.color }} />
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: tag.color }}>{tag.name}</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: tag.color }}>
+                    {(t.defaultTagNames as Record<string, string>)[tag.id] ?? tag.name}
+                  </Text>
                 </View>
               ))}
             </View>

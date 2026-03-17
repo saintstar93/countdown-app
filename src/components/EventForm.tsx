@@ -386,7 +386,7 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                 >
                   <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: active ? '#fff' : tag.color }} />
                   <Text style={{ fontSize: 14, fontWeight: '500', color: active ? '#fff' : textColor }}>
-                    {tag.name}
+                    {(t.defaultTagNames as Record<string, string>)[tag.id] ?? tag.name}
                   </Text>
                 </Pressable>
               );

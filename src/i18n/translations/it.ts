@@ -162,6 +162,14 @@ export const it: Translations = {
     deleteButton: 'Elimina evento',
   },
 
+  defaultTagNames: {
+    travel: 'Viaggio',
+    birthday: 'Compleanno',
+    concert: 'Concerto',
+    work: 'Lavoro',
+    personal: 'Personale',
+  },
+
   eventForm: {
     titleLabel: 'Titolo *',
     titlePlaceholder: "Nome dell'evento…",

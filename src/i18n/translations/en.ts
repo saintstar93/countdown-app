@@ -160,6 +160,14 @@ export const en = {
     deleteButton: 'Delete event',
   },
 
+  defaultTagNames: {
+    travel: 'Travel',
+    birthday: 'Birthday',
+    concert: 'Concert',
+    work: 'Work',
+    personal: 'Personal',
+  },
+
   eventForm: {
     titleLabel: 'Title *',
     titlePlaceholder: "Event name…",
