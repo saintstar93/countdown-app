@@ -333,7 +333,11 @@ const EventForm = forwardRef<EventFormHandle, EventFormProps>(
                   }}
                 >
                   <Text style={{ fontSize: 14, fontWeight: '500', color: active ? accentText : mutedColor }}>
-                    {f.label}
+                    {f.value === 'days' ? t.eventForm.countdownFormatDays
+                      : f.value === 'detailed' ? t.eventForm.countdownFormatDetailed
+                      : f.value === 'hours' ? t.eventForm.countdownFormatHours
+                      : f.value === 'weeks' ? t.eventForm.countdownFormatWeeks
+                      : t.eventForm.countdownFormatFull}
                   </Text>
                 </Pressable>
               );
