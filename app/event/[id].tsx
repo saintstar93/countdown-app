@@ -138,21 +138,45 @@ export default function EventDetailScreen() {
           headerTitleStyle: { color: textColor, fontWeight: '700' },
           headerTintColor: '#9B9B9B',
           headerRight: !isMemory ? () => (
-            <Pressable
-              onPress={() => router.push(`/event/edit/${event.id}`)}
-              hitSlop={8}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-                marginRight: 4,
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                alignItems: 'center',
-                justifyContent: 'center',
-              })}
-            >
-              <Ionicons name="create-outline" size={22} color={isDark ? '#F5F5F5' : '#2D2D2D'} />
-            </Pressable>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 4 }}>
+              <Pressable
+                onPress={() => {
+                  Alert.alert(t.event.deleteEventTitle, t.event.deleteEventMessage, [
+                    { text: t.common.cancel, style: 'cancel' },
+                    {
+                      text: t.event.deleteEventConfirm,
+                      style: 'destructive',
+                      onPress: async () => { await removeEvent(event.id); router.back(); },
+                    },
+                  ]);
+                }}
+                hitSlop={8}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                })}
+              >
+                <Ionicons name="trash-outline" size={20} color="#EF4444" />
+              </Pressable>
+              <Pressable
+                onPress={() => router.push(`/event/edit/${event.id}`)}
+                hitSlop={8}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                })}
+              >
+                <Ionicons name="create-outline" size={22} color={isDark ? '#F5F5F5' : '#2D2D2D'} />
+              </Pressable>
+            </View>
           ) : () => (
             <Pressable
               onPress={() => {
