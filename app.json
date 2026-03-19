@@ -70,8 +70,7 @@
       "@react-native-community/datetimepicker"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "baseUrl": "/nearday/"
+      "typedRoutes": true
     },
     "extra": {
       "router": {},
