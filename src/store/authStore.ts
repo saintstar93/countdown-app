@@ -70,14 +70,21 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          set({ isLoading: false });
           if (error) {
-            set({ isLoading: false });
+            if (error.message.includes('JSON Parse error') || error.message.includes('Unexpected character')) {
+              return 'Errore di configurazione: Controlla URL e Anon Key di Supabase nel file .env';
+            }
             return error.message;
           }
-          set({ user: mapSupabaseUser(data.user), isAuthenticated: true, isLoading: false });
+          set({ user: mapSupabaseUser(data.user), isAuthenticated: true });
           return null;
-        } catch {
+        } catch (err: any) {
           set({ isLoading: false });
+          const msg = err?.message || '';
+          if (msg.includes('JSON Parse error') || msg.includes('Unexpected character')) {
+            return 'Errore di configurazione: Controlla URL e Anon Key di Supabase nel file .env';
+          }
           return getT().auth.errors.networkError;
         }
       },
@@ -91,9 +98,19 @@ export const useAuthStore = create<AuthStore>()(
             options: displayName ? { data: { display_name: displayName } } : undefined,
           });
           set({ isLoading: false });
-          return error ? error.message : null;
-        } catch {
+          if (error) {
+            if (error.message.includes('JSON Parse error') || error.message.includes('Unexpected character')) {
+              return 'Errore di configurazione: Controlla URL e Anon Key di Supabase nel file .env';
+            }
+            return error.message;
+          }
+          return null;
+        } catch (err: any) {
           set({ isLoading: false });
+          const msg = err?.message || '';
+          if (msg.includes('JSON Parse error') || msg.includes('Unexpected character')) {
+            return 'Errore di configurazione: Controlla URL e Anon Key di Supabase nel file .env';
+          }
           return getT().auth.errors.networkError;
         }
       },
