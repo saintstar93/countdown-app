@@ -2,6 +2,13 @@ const path = require('path');
 const { getDefaultConfig } = require('expo/metro-config');
 const { withNativeWind } = require('nativewind/metro');
 
+// Polyfill for Node.js versions < 20
+if (!Array.prototype.toReversed) {
+  Array.prototype.toReversed = function() {
+    return [...this].reverse();
+  };
+}
+
 const config = getDefaultConfig(__dirname);
 
 config.transformer = {
